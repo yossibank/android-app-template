@@ -15,8 +15,17 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        // TODO: 共通コアを社内 Maven に置いたら mavenLocal は外す（ローカル結線の暫定措置）
-        mavenLocal()
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/yossibank/kmp-app-template")
+            // ローカルは ~/.gradle/gradle.properties、CI は Actions の環境変数から取る。
+            credentials {
+                username = providers.gradleProperty("gpr.user")
+                    .orElse(providers.environmentVariable("GITHUB_ACTOR")).orNull
+                password = providers.gradleProperty("gpr.token")
+                    .orElse(providers.environmentVariable("GITHUB_TOKEN")).orNull
+            }
+        }
         google()
         mavenCentral()
     }

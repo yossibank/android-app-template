@@ -20,7 +20,6 @@ flowchart LR
 
 | コマンド | 内容 |
 | --- | --- |
-| `make bootstrap` | 共通コアを mavenLocal へ publish（clone 直後に 1 度。`../kmp-app-template` が必要） |
 | `make verify` | デバッグ APK のビルド + ユニットテスト（変更後はこれを通す） |
 | `make build` | デバッグ APK のみ |
 | `make test` | ユニットテストのみ |
@@ -34,3 +33,4 @@ flowchart LR
 | compileSdk / targetSdk | 37 |
 | minSdk | 24 |
 | Compose BOM | 2026.08.00 |
+| 認証 | `~/.gradle/gradle.properties` に `gpr.user` / `gpr.token`（共通コアの取得に必要） |

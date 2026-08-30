@@ -4,8 +4,9 @@ Android アプリ。Jetpack Compose の 1 画面のみの最小構成。
 
 ## 検証
 
-clone 直後と kmp-app-template を変更した後は `make bootstrap`（mavenLocal への publish）を先に実行する。
-共通コアは現在ローカル参照で、`../kmp-app-template` に checkout されている前提。
+共通コアは GitHub Packages から取得する。`~/.gradle/gradle.properties` に
+`gpr.user` と `gpr.token` が必要（GitHub Packages は public リポジトリでも読み取りに
+トークンを要求する）。CI では `GITHUB_ACTOR` / `GITHUB_TOKEN` が自動で使われる。
 
 変更したら必ず通す。通らないものは完了ではない。
 
