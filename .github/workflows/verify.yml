@@ -30,6 +30,9 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          # 一時的にキャッシュを無効化して、実際にネットワークから解決できるか検証する
+          cache-disabled: true
 
       - name: Verify
         run: make verify
