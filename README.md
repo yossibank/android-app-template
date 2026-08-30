@@ -1,6 +1,28 @@
 # android-app-template
 
-Android アプリの初期テンプレート。Jetpack Compose の 1 画面のみを含む最小構成。
+> Android アプリの初期テンプレート。Jetpack Compose の 1 画面のみを含む最小構成。
+
+## 3 リポジトリの関係
+
+```mermaid
+flowchart LR
+    KMP["kmp-app-template<br/>共通ロジック"]
+    AND["android-app-template<br/>← このリポジトリ"]
+    IOS["ios-app-template<br/>iOS アプリ"]
+    KMP -->|"AAR / klib"| AND
+    KMP -->|"Shared.xcframework"| IOS
+```
+
+[ios-app-template](https://github.com/yossibank/ios-app-template) ・
+[kmp-app-template](https://github.com/yossibank/kmp-app-template)
+
+## コマンド
+
+| コマンド | 内容 |
+| --- | --- |
+| `make verify` | デバッグ APK のビルド + ユニットテスト（変更後はこれを通す） |
+| `make build` | デバッグ APK のみ |
+| `make test` | ユニットテストのみ |
 
 ## 環境
 
@@ -11,16 +33,3 @@ Android アプリの初期テンプレート。Jetpack Compose の 1 画面の�
 | compileSdk / targetSdk | 37 |
 | minSdk | 24 |
 | Compose BOM | 2026.08.00 |
-
-## ビルド
-
-```sh
-make verify   # デバッグ APK のビルド + ユニットテスト
-make build    # デバッグ APK のみ
-make test     # ユニットテストのみ
-```
-
-## 関連リポジトリ
-
-- [ios-app-template](https://github.com/yossibank/ios-app-template)
-- [kmp-app-template](https://github.com/yossibank/kmp-app-template) — 共通ロジック（KMP）
