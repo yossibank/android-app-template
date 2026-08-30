@@ -23,6 +23,8 @@ flowchart LR
 | `make verify` | デバッグ APK のビルド + ユニットテスト（変更後はこれを通す） |
 | `make build` | デバッグ APK のみ |
 | `make test` | ユニットテストのみ |
+| `make lint` | ktlint によるチェック（`make verify` に含まれる） |
+| `make format` | ktlint で自動修正 |
 
 ## 環境
 
