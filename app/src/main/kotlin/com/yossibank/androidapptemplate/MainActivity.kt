@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.yossibank.shared.Greeting
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,27 +23,25 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding),
-                    )
+                    SharedGreeting(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
     }
 }
 
+/** 文言は共通コア（kmp-app-template）から取得する。 */
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun SharedGreeting(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Hello, $name!", style = MaterialTheme.typography.headlineMedium)
+        Text(text = Greeting().greet(), style = MaterialTheme.typography.headlineMedium)
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun GreetingPreview() {
+private fun SharedGreetingPreview() {
     MaterialTheme {
-        Greeting(name = "Android")
+        SharedGreeting()
     }
 }

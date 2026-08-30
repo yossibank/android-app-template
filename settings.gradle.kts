@@ -15,6 +15,8 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // TODO: 共通コアを社内 Maven に置いたら mavenLocal は外す（ローカル結線の暫定措置）
+        mavenLocal()
         google()
         mavenCentral()
     }

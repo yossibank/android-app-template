@@ -6,6 +6,7 @@ androidxLifecycle = "2.11.0"
 androidxActivityCompose = "1.13.0"
 androidxComposeBom = "2026.08.00"
 junit = "4.13.2"
+shared = "0.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCoreKtx" }
@@ -18,6 +19,7 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+shared = { group = "com.yossibank", name = "shared", version.ref = "shared" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -20,6 +20,7 @@ flowchart LR
 
 | コマンド | 内容 |
 | --- | --- |
+| `make bootstrap` | 共通コアを mavenLocal へ publish（clone 直後に 1 度。`../kmp-app-template` が必要） |
 | `make verify` | デバッグ APK のビルド + ユニットテスト（変更後はこれを通す） |
 | `make build` | デバッグ APK のみ |
 | `make test` | ユニットテストのみ |
