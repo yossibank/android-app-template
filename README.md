@@ -15,9 +15,12 @@ Android アプリの初期テンプレート。Jetpack Compose の 1 画面の�
 ## ビルド
 
 ```sh
-./gradlew assembleDebug        # デバッグ APK
-./gradlew testDebugUnitTest    # ユニットテスト
+make verify   # デバッグ APK のビルド + ユニットテスト
+make build    # デバッグ APK のみ
+make test     # ユニットテストのみ
 ```
+
+Android Studio 用の Run Configuration「All Tests」を `.run/` に用意している。
 
 ## 関連リポジトリ
 
