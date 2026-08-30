@@ -20,8 +20,6 @@ make build    # デバッグ APK のみ
 make test     # ユニットテストのみ
 ```
 
-Android Studio 用の Run Configuration「All Tests」を `.run/` に用意している。
-
 ## 関連リポジトリ
 
 - [ios-app-template](https://github.com/yossibank/ios-app-template)
