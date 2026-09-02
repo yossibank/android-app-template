@@ -30,7 +30,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** 文言は共通コア（kmp-app-template）から取得する。 */
 @Composable
 fun SharedGreeting(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
