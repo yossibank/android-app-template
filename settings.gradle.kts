@@ -18,7 +18,6 @@ dependencyResolutionManagement {
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/yossibank/kmp-app-template")
-            // ローカルは ~/.gradle/gradle.properties、CI は Actions の環境変数から取る。
             credentials {
                 username = providers.gradleProperty("gpr.user")
                     .orElse(providers.environmentVariable("GITHUB_ACTOR")).orNull
