@@ -36,4 +36,9 @@ jobs:
         env:
           # settings.gradle.kts が gpr.user / gpr.token の次に読む変数
           GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 共通コアが private の場合、GITHUB_TOKEN では別リポジトリのパッケージを
+          # 読めない（Could not find com.yossibank:shared:x.y.z になる）。permissions に
+          # packages: read があっても足りないことを実際に private へ切り替えて確認した。
+          # その場合は SHARED_CORE_TOKEN に read:packages を持つ PAT を登録する。
+          # public の間は GITHUB_TOKEN で足りる。
+          GITHUB_TOKEN: ${{ secrets.SHARED_CORE_TOKEN || secrets.GITHUB_TOKEN }}
