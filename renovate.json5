@@ -1,0 +1,33 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["config:recommended"],
+  timezone: "Asia/Tokyo",
+  schedule: ["before 9am on monday"],
+  // 共通コアだけは Maven ではなく GitHub のタグを見る。
+  // GitHub Packages は public でも読み取りに認証を要求するため、
+  // Renovate から Maven のバージョン一覧を引けない。
+  // 公開しているタグ（vX.Y.Z）は認証なしで読めるので、そちらを版の出所にする。
+  customManagers: [
+    {
+      customType: "regex",
+      managerFilePatterns: ["/^gradle/libs\\.versions\\.toml$/"],
+      matchStrings: ["shared = \"(?<currentValue>[^\"]+)\""],
+      depNameTemplate: "yossibank/kmp-app-template",
+      datasourceTemplate: "github-tags",
+      extractVersionTemplate: "^v(?<version>.*)$",
+    },
+  ],
+  packageRules: [
+    {
+      matchUpdateTypes: ["major"],
+      labels: ["major"],
+    },
+    // 上の customManager が版を管理するため、Maven 側の探索は止める。
+    // 放置すると認証エラーが Dependency Dashboard に出続ける。
+    {
+      matchManagers: ["gradle"],
+      matchPackageNames: ["com.yossibank:shared"],
+      enabled: false,
+    },
+  ],
+}
