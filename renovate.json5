@@ -22,6 +22,16 @@
       matchUpdateTypes: ["major"],
       labels: ["major"],
     },
+    // Android Studio 2026.1 が扱える AGP は 9.3 系まで。9.4.0 に上げると
+    // CLI のビルドは通るため CI では気づけず、IDE だけが開けなくなる。
+    // Studio を更新したらこの制限を外す。
+    {
+      matchPackageNames: [
+        "com.android.application",
+        "com.android.kotlin.multiplatform.library",
+      ],
+      allowedVersions: "<9.4.0",
+    },
     // 上の customManager が版を管理するため、Maven 側の探索は止める。
     // 放置すると認証エラーが Dependency Dashboard に出続ける。
     {
