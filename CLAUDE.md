@@ -18,6 +18,10 @@ make verify   # ktlint + assembleDebug
 
 - UI は Jetpack Compose のみ。View / XML レイアウトは追加しない。
 - 共通ロジックは kmp-app-template 側に置く。ここには Android 固有のものだけ。
+- **状態を持つ Composable と描画だけの Composable を分け、`@Preview` は描画側に付ける。**
+  Compose の静的プレビューは `produceState` / `LaunchedEffect` を実行しないため、
+  状態を持つ側にプレビューを付けても読み込み中しか出ない。取得は引数で注入し、
+  既定の引数で本番の経路を与える。
 - ロジックのテストは kmp-app-template の `commonTest` に置く。1 度書けば両OSで走る。
   ここに置くのは Android 固有のテストだけで、現在は 0 件。テスト用の依存も持たない。
 - バージョンは `gradle/libs.versions.toml` にのみ書く。build.gradle.kts に直書きしない。

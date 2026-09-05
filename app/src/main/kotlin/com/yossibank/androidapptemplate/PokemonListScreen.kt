@@ -12,21 +12,29 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yossibank.shared.PokemonApi
 import com.yossibank.shared.PokemonListResult
+import com.yossibank.shared.generated.model.PokemonSummary
 
 @Composable
-fun PokemonListScreen(modifier: Modifier = Modifier) {
-    val api = remember { PokemonApi() }
-    val result by produceState<PokemonListResult?>(initialValue = null, api) {
-        value = api.fetchPage()
-    }
+fun PokemonListScreen(
+    modifier: Modifier = Modifier,
+    load: suspend () -> PokemonListResult = { PokemonApi().fetchPage() },
+) {
+    val result by produceState<PokemonListResult?>(initialValue = null) { value = load() }
+    PokemonList(result = result, modifier = modifier)
+}
 
-    when (val current = result) {
+@Composable
+private fun PokemonList(
+    result: PokemonListResult?,
+    modifier: Modifier = Modifier,
+) {
+    when (result) {
         null ->
             Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -34,7 +42,7 @@ fun PokemonListScreen(modifier: Modifier = Modifier) {
 
         is PokemonListResult.Loaded ->
             LazyColumn(modifier = modifier.fillMaxSize()) {
-                items(current.pokemon, key = { it.url }) { pokemon ->
+                items(result.pokemon, key = { it.url }) { pokemon ->
                     Text(
                         text = pokemon.name,
                         style = MaterialTheme.typography.bodyLarge,
@@ -47,11 +55,46 @@ fun PokemonListScreen(modifier: Modifier = Modifier) {
         is PokemonListResult.Failed ->
             Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = current.message,
+                    text = result.message,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(24.dp),
                 )
             }
+    }
+}
+
+@Preview(name = "一覧", showBackground = true)
+@Composable
+private fun PokemonListLoadedPreview() {
+    MaterialTheme {
+        PokemonList(
+            result =
+                PokemonListResult.Loaded(
+                    pokemon =
+                        listOf(
+                            PokemonSummary("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
+                            PokemonSummary("ivysaur", "https://pokeapi.co/api/v2/pokemon/2/"),
+                            PokemonSummary("venusaur", "https://pokeapi.co/api/v2/pokemon/3/"),
+                        ),
+                    hasMore = true,
+                ),
+        )
+    }
+}
+
+@Preview(name = "失敗", showBackground = true)
+@Composable
+private fun PokemonListFailedPreview() {
+    MaterialTheme {
+        PokemonList(result = PokemonListResult.Failed("ネットワークに接続できません"))
+    }
+}
+
+@Preview(name = "読み込み中", showBackground = true)
+@Composable
+private fun PokemonListLoadingPreview() {
+    MaterialTheme {
+        PokemonList(result = null)
     }
 }
