@@ -10,3 +10,5 @@ trim_trailing_whitespace = true
 # @Composable 関数は Compose の慣習で PascalCase を使うため、
 # ktlint の function-naming の対象から外す。
 ktlint_function_naming_ignore_when_annotated_with = Composable
+ktlint_standard_multiline-expression-wrapping = disabled
+ktlint_function_signature_body_expression_wrapping = default

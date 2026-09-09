@@ -19,10 +19,14 @@ dependencyResolutionManagement {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/yossibank/kmp-app-template")
             credentials {
-                username = providers.gradleProperty("gpr.user")
-                    .orElse(providers.environmentVariable("GITHUB_ACTOR")).orNull
-                password = providers.gradleProperty("gpr.token")
-                    .orElse(providers.environmentVariable("GITHUB_TOKEN")).orNull
+                username = providers
+                    .gradleProperty("gpr.user")
+                    .orElse(providers.environmentVariable("GITHUB_ACTOR"))
+                    .orNull
+                password = providers
+                    .gradleProperty("gpr.token")
+                    .orElse(providers.environmentVariable("GITHUB_TOKEN"))
+                    .orNull
             }
         }
         google()
