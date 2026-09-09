@@ -1,6 +1,8 @@
 package com.yossibank.androidapptemplate
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,40 +11,55 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.yossibank.shared.PokemonApi
-import com.yossibank.shared.PokemonListResult
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yossibank.shared.generated.model.PokemonSummary
 
 @Composable
 fun PokemonListScreen(
     modifier: Modifier = Modifier,
-    load: suspend () -> PokemonListResult = { PokemonApi().fetchPage() },
+    viewModel: PokemonListViewModel = viewModel(),
 ) {
-    val result by produceState<PokemonListResult?>(initialValue = null) { value = load() }
-    PokemonList(result = result, modifier = modifier)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    PokemonList(
+        uiState = uiState,
+        onRetry = viewModel::reload,
+        modifier = modifier,
+    )
 }
 
 @Composable
 private fun PokemonList(
-    result: PokemonListResult?,
+    uiState: PokemonListUiState,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    when (result) {
-        null ->
+    when (uiState) {
+        PokemonListUiState.Loading ->
             Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
 
-        is PokemonListResult.Loaded ->
+        PokemonListUiState.Empty ->
+            Message(
+                text = "ポケモンが見つかりませんでした",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                onRetry = onRetry,
+                modifier = modifier,
+            )
+
+        is PokemonListUiState.Loaded ->
             LazyColumn(modifier = modifier.fillMaxSize()) {
-                items(result.pokemon, key = { it.url }) { pokemon ->
+                items(uiState.pokemon, key = { it.url }) { pokemon ->
                     Text(
                         text = pokemon.name,
                         style = MaterialTheme.typography.bodyLarge,
@@ -52,15 +69,32 @@ private fun PokemonList(
                 }
             }
 
-        is PokemonListResult.Failed ->
-            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = result.message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(24.dp),
-                )
-            }
+        is PokemonListUiState.Failed ->
+            Message(
+                text = uiState.message,
+                color = MaterialTheme.colorScheme.error,
+                onRetry = onRetry,
+                modifier = modifier,
+            )
+    }
+}
+
+@Composable
+private fun Message(
+    text: String,
+    color: Color,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(text = text, style = MaterialTheme.typography.bodyMedium, color = color)
+        TextButton(onClick = onRetry) {
+            Text(text = "再取得")
+        }
     }
 }
 
@@ -69,17 +103,23 @@ private fun PokemonList(
 private fun PokemonListLoadedPreview() {
     MaterialTheme {
         PokemonList(
-            result =
-                PokemonListResult.Loaded(
-                    pokemon =
-                        listOf(
-                            PokemonSummary("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
-                            PokemonSummary("ivysaur", "https://pokeapi.co/api/v2/pokemon/2/"),
-                            PokemonSummary("venusaur", "https://pokeapi.co/api/v2/pokemon/3/"),
-                        ),
-                    hasMore = true,
+            uiState = PokemonListUiState.Loaded(
+                pokemon = listOf(
+                    PokemonSummary("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
+                    PokemonSummary("ivysaur", "https://pokeapi.co/api/v2/pokemon/2/"),
+                    PokemonSummary("venusaur", "https://pokeapi.co/api/v2/pokemon/3/"),
                 ),
+            ),
+            onRetry = {},
         )
+    }
+}
+
+@Preview(name = "空", showBackground = true)
+@Composable
+private fun PokemonListEmptyPreview() {
+    MaterialTheme {
+        PokemonList(uiState = PokemonListUiState.Empty, onRetry = {})
     }
 }
 
@@ -87,7 +127,10 @@ private fun PokemonListLoadedPreview() {
 @Composable
 private fun PokemonListFailedPreview() {
     MaterialTheme {
-        PokemonList(result = PokemonListResult.Failed("ネットワークに接続できません"))
+        PokemonList(
+            uiState = PokemonListUiState.Failed("ネットワークに接続できません"),
+            onRetry = {},
+        )
     }
 }
 
@@ -95,6 +138,6 @@ private fun PokemonListFailedPreview() {
 @Composable
 private fun PokemonListLoadingPreview() {
     MaterialTheme {
-        PokemonList(result = null)
+        PokemonList(uiState = PokemonListUiState.Loading, onRetry = {})
     }
 }
