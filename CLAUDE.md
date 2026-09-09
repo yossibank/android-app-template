@@ -1,37 +1,51 @@
 # android-app-template
 
-Android アプリ。Jetpack Compose の 1 画面のみの最小構成。
+## プロジェクト概要
 
-## 検証
+Android アプリの初期テンプレート。ビジネスロジックは Kotlin Multiplatform の共通コアに置き、
+このリポジトリには Android 固有のものだけを置く。
 
-共通コアは GitHub Packages から取得する。`~/.gradle/gradle.properties` に
-`gpr.user` と `gpr.token` が必要（GitHub Packages は public リポジトリでも読み取りに
-トークンを要求する）。CI では `GITHUB_ACTOR` / `GITHUB_TOKEN` が自動で使われる。
+kmp-app-template（共通ロジック）・ios-app-template と合わせた 3 リポジトリ構成の 1 つ。
 
-変更したら必ず通す。通らないものは完了ではない。
+## 技術スタック
 
-```sh
-make verify   # ktlint + assembleDebug
+| 項目 | 採用 |
+| --- | --- |
+| UI | Jetpack Compose |
+| 状態管理 | ViewModel + StateFlow |
+| 並行性 | Kotlin Coroutines |
+| テスト | JUnit 4 + kotlinx-coroutines-test |
+| 依存管理 | Gradle（バージョンカタログ） |
+
+バージョンは [README.md](README.md)。
+
+## プロジェクト構成
+
+```
+app/src/main/     画面。1 画面を UiState / ViewModel / Screen の 3 つに分ける
+app/src/test/     ViewModel のテスト
+gradle/           依存とバージョン
 ```
 
-## 規約
+単一モジュール（`:app`）。ファイルの役割は [README.md](README.md)。
 
-- UI は Jetpack Compose のみ。View / XML レイアウトは追加しない。
+## 使用ライブラリ
+
+| | |
+| --- | --- |
+| `com.yossibank:shared` | 共通コア。唯一の依存。GitHub Packages から取得 |
+| AndroidX Lifecycle / Compose | ViewModel と UI |
+| ktlint | 書式のチェック |
+| Renovate | 依存の更新 PR（毎週月曜） |
+
+## コーディング規約
+
+- コードに無駄なコメントを書かない。
+
+## 全体ルール
+
+- 変更したら `make verify` を通す。通らないものは完了ではない。
 - 共通ロジックは kmp-app-template 側に置く。ここには Android 固有のものだけ。
-- **状態を持つ Composable と描画だけの Composable を分け、`@Preview` は描画側に付ける。**
-  Compose の静的プレビューは `produceState` / `LaunchedEffect` を実行しないため、
-  状態を持つ側にプレビューを付けても読み込み中しか出ない。取得は引数で注入し、
-  既定の引数で本番の経路を与える。
-- ロジックのテストは kmp-app-template の `commonTest` に置く。1 度書けば両OSで走る。
-  ここに置くのは Android 固有のテストだけで、現在は 0 件。テスト用の依存も持たない。
-- バージョンは `gradle/libs.versions.toml` にのみ書く。build.gradle.kts に直書きしない。
-
-## やってはいけない
-
-- `org.jetbrains.kotlin.android` を適用しない（AGP 9 でエラーになる）
-- Compose Compiler プラグイン（`org.jetbrains.kotlin.plugin.compose`）を外さない
-- `.gitignore` に `*.jar` を追加しない（`gradle-wrapper.jar` が消える）
-- `compileSdk` / `targetSdk` を 37 未満に下げない（AndroidX の最新版が要求する）
-- `INTERNET` 権限を宣言しない。共通コアの `ktor-client-okhttp` が引き込む
-  `okhttp-android` が宣言しており、release のマージ後マニフェストにも入ることを確認済み。
-  共通コアが HTTP クライアントを別のエンジンに替えたら、ここで宣言し直すこと。
+- バージョンを `gradle/libs.versions.toml` 以外で指定しない。
+- `org.jetbrains.kotlin.android` を適用しない（AGP 9 でエラーになる）。
+- `.gitignore` に `*.jar` を追加しない（`gradle-wrapper.jar` が消える）。
