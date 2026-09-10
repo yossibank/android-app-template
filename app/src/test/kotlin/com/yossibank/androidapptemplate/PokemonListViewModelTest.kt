@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -44,12 +45,43 @@ class PokemonListViewModelTest {
     }
 
     @Test
-    fun `取得に失敗したらメッセージを持つ`() = runTest(dispatcher) {
-        val viewModel = PokemonListViewModel { PokemonListResult.Failed("圏外です") }
+    fun `結果が空なら Empty になる`() = runTest(dispatcher) {
+        val viewModel = PokemonListViewModel { PokemonListResult.Loaded(emptyList()) }
 
         advanceUntilIdle()
 
-        assertEquals(PokemonListUiState.Failed("圏外です"), viewModel.uiState.value)
+        assertEquals(PokemonListUiState.Empty, viewModel.uiState.value)
+    }
+
+    @Test
+    fun `接続できないときは再試行できる失敗になる`() = runTest(dispatcher) {
+        val viewModel = PokemonListViewModel { PokemonListResult.Failed.Offline }
+
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value as PokemonListUiState.Failed
+        assertTrue("接続の失敗は再試行で回復しうる", uiState.canRetry)
+    }
+
+    @Test
+    fun `サーバーエラーは状態コードを文言に含める`() = runTest(dispatcher) {
+        val viewModel = PokemonListViewModel { PokemonListResult.Failed.Server(503) }
+
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value as PokemonListUiState.Failed
+        assertTrue("状態コードが読み取れない: ${uiState.message}", uiState.message.contains("503"))
+        assertTrue(uiState.canRetry)
+    }
+
+    @Test
+    fun `解釈できない応答は再試行できない失敗になる`() = runTest(dispatcher) {
+        val viewModel = PokemonListViewModel { PokemonListResult.Failed.Unexpected }
+
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value as PokemonListUiState.Failed
+        assertFalse("何度試しても直らないので再試行を出さない", uiState.canRetry)
     }
 
     @Test
@@ -83,12 +115,12 @@ class PokemonListViewModelTest {
             if (call == 1) {
                 try {
                     delay(1_000)
-                    loaded("古い結果")
+                    loaded("古い")
                 } catch (e: Exception) {
-                    PokemonListResult.Failed("キャンセルが化けた")
+                    PokemonListResult.Failed.Unexpected
                 }
             } else {
-                loaded("新しい結果")
+                loaded("新しい")
             }
         }
 
@@ -100,8 +132,8 @@ class PokemonListViewModelTest {
         collector.cancel()
 
         assertFalse(
-            "キャンセルした取得の結果が観測された: " + seen,
-            seen.contains(PokemonListUiState.Failed("キャンセルが化けた")),
+            "キャンセルした取得の結果が観測された: $seen",
+            seen.any { it is PokemonListUiState.Failed },
         )
     }
 
@@ -111,22 +143,11 @@ class PokemonListViewModelTest {
 
         advanceUntilIdle()
 
-        assertEquals(PokemonListUiState.Failed("通信が死んだ"), viewModel.uiState.value)
-    }
-
-    @Test
-    fun `結果が空なら Empty になる`() = runTest(dispatcher) {
-        val viewModel = PokemonListViewModel {
-            PokemonListResult.Loaded(pokemon = emptyList(), hasMore = false)
-        }
-
-        advanceUntilIdle()
-
-        assertEquals(PokemonListUiState.Empty, viewModel.uiState.value)
+        val uiState = viewModel.uiState.value as PokemonListUiState.Failed
+        assertFalse(uiState.canRetry)
     }
 
     private fun loaded(name: String) = PokemonListResult.Loaded(
         pokemon = listOf(PokemonSummary(name, "https://example.com/$name")),
-        hasMore = false,
     )
 }

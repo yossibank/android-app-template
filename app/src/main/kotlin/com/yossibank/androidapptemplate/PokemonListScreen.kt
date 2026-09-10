@@ -95,7 +95,7 @@ private fun PokemonList(
             Message(
                 text = uiState.message,
                 color = MaterialTheme.colorScheme.error,
-                onRetry = onRetry,
+                onRetry = onRetry.takeIf { uiState.canRetry },
                 modifier = modifier,
             )
     }
@@ -200,12 +200,25 @@ private fun PokemonListEmptyPreview() {
     }
 }
 
-@Preview(name = "失敗", showBackground = true)
+@Preview(name = "失敗（再試行できる）", showBackground = true)
 @Composable
 private fun PokemonListFailedPreview() {
     MaterialTheme {
         PokemonList(
-            uiState = PokemonListUiState.Failed("ネットワークに接続できません"),
+            uiState = PokemonListUiState.Failed("接続を確認してください", canRetry = true),
+            query = "",
+            onQueryChange = {},
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(name = "失敗（再試行できない）", showBackground = true)
+@Composable
+private fun PokemonListUnrecoverablePreview() {
+    MaterialTheme {
+        PokemonList(
+            uiState = PokemonListUiState.Failed("データを読み取れませんでした", canRetry = false),
             query = "",
             onQueryChange = {},
             onRetry = {},

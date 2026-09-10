@@ -13,5 +13,6 @@ sealed interface PokemonListUiState {
 
     data class Failed(
         val message: String,
+        val canRetry: Boolean,
     ) : PokemonListUiState
 }

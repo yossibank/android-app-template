@@ -37,16 +37,40 @@ class PokemonListViewModel(
                         } else {
                             PokemonListUiState.Loaded(result.pokemon)
                         }
-                    is PokemonListResult.Failed -> PokemonListUiState.Failed(result.message)
+                    is PokemonListResult.Failed -> result.toUiState()
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                PokemonListUiState.Failed(e.message ?: "unknown error")
+                PokemonListUiState.Failed(
+                    message = "データを読み取れませんでした",
+                    canRetry = false,
+                )
             }
 
             ensureActive()
             mutableUiState.value = next
         }
     }
+}
+
+@Suppress("DEPRECATION")
+private fun PokemonListResult.Failed.toUiState(): PokemonListUiState.Failed = when (this) {
+    is PokemonListResult.Failed.Offline ->
+        PokemonListUiState.Failed(
+            message = "接続を確認してください",
+            canRetry = true,
+        )
+
+    is PokemonListResult.Failed.Server ->
+        PokemonListUiState.Failed(
+            message = "サーバーが応答しませんでした（$statusCode）",
+            canRetry = true,
+        )
+
+    is PokemonListResult.Failed.Unexpected, is PokemonListResult.Failed.Legacy ->
+        PokemonListUiState.Failed(
+            message = "データを読み取れませんでした",
+            canRetry = false,
+        )
 }
