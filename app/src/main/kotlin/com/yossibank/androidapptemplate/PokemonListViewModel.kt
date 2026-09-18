@@ -54,7 +54,6 @@ class PokemonListViewModel(
     }
 }
 
-@Suppress("DEPRECATION")
 private fun PokemonListResult.Failed.toUiState(): PokemonListUiState.Failed = when (this) {
     is PokemonListResult.Failed.Offline ->
         PokemonListUiState.Failed(
@@ -68,7 +67,7 @@ private fun PokemonListResult.Failed.toUiState(): PokemonListUiState.Failed = wh
             canRetry = true,
         )
 
-    is PokemonListResult.Failed.Unexpected, is PokemonListResult.Failed.Legacy ->
+    is PokemonListResult.Failed.Unexpected ->
         PokemonListUiState.Failed(
             message = "データを読み取れませんでした",
             canRetry = false,
