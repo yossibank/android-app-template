@@ -4,7 +4,7 @@ kotlin = "2.4.10"
 ktlint = "14.2.0"
 
 androidx-activity = "1.13.0"
-androidx-compose-bom = "2026.08.00"
+androidx-compose-bom = "2026.09.00"
 androidx-core = "1.19.0"
 androidx-lifecycle = "2.11.0"
 
