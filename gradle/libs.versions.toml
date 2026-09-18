@@ -9,7 +9,7 @@ androidx-core = "1.19.0"
 androidx-lifecycle = "2.11.0"
 
 junit = "4.13.2"
-kotlinx-coroutines = "1.10.2"
+kotlinx-coroutines = "1.11.0"
 
 shared = "0.8.0"
 
