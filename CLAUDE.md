@@ -23,6 +23,7 @@ kmp-app-template（共通ロジック）・ios-app-template と合わせた 3 �
 
 ```
 app/src/main/     画面。1 画面を UiState / ViewModel / Screen の 3 つに分ける
+                  画面をまたいで使う仕組みは同じ階層に単独のファイルで置く
 app/src/test/     ViewModel のテスト
 gradle/           依存とバージョン
 ```

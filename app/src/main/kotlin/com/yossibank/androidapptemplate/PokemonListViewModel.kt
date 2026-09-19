@@ -4,12 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yossibank.shared.PokemonListResult
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 class PokemonListViewModel(
     private val paging: PokemonPaging = SharedPokemonPaging(),
@@ -17,22 +14,17 @@ class PokemonListViewModel(
     private val mutableUiState = MutableStateFlow<PokemonListUiState>(PokemonListUiState.Loading)
     val uiState: StateFlow<PokemonListUiState> = mutableUiState.asStateFlow()
 
-    private var loading: Job? = null
+    private val latest = LatestResult(viewModelScope, mutableUiState)
 
     init {
         reload()
     }
 
     fun reload() {
-        loading?.cancel()
-        loading = viewModelScope.launch {
+        latest.restart {
             mutableUiState.value = PokemonListUiState.Loading
             paging.reset()
-
-            val next = nextPage()
-
-            ensureActive()
-            mutableUiState.value = next
+            nextPage()
         }
     }
 
@@ -40,16 +32,14 @@ class PokemonListViewModel(
         val current = mutableUiState.value
 
         if (current !is PokemonListUiState.Loaded || !current.hasMore) return
-        if (loading?.isActive == true) return
 
-        loading = viewModelScope.launch {
+        latest.startIfIdle {
             mutableUiState.value = current.copy(isLoadingMore = true)
 
             val next = nextPage()
 
-            ensureActive()
             // 追加取得が失敗しても、読み込めている分は残す。
-            mutableUiState.value = if (next is PokemonListUiState.Loaded) next else current
+            if (next is PokemonListUiState.Loaded) next else current
         }
     }
 
