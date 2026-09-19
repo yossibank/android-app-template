@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -15,10 +16,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yossibank.shared.generated.model.PokemonSummary
+
+private const val PREFETCH_DISTANCE = 3
 
 @Composable
 fun PokemonListScreen(
@@ -41,6 +46,7 @@ fun PokemonListScreen(
         query = query,
         onQueryChange = { query = it },
         onRetry = viewModel::reload,
+        onLoadMore = viewModel::loadMore,
         modifier = modifier,
     )
 }
@@ -51,6 +57,7 @@ private fun PokemonList(
     query: String,
     onQueryChange: (String) -> Unit,
     onRetry: () -> Unit,
+    onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
@@ -70,25 +77,7 @@ private fun PokemonList(
 
         is PokemonListUiState.Loaded ->
             Searchable(query = query, onQueryChange = onQueryChange, modifier = modifier) {
-                val filtered = uiState.pokemon.filter { it.name.contains(query, ignoreCase = true) }
-
-                if (filtered.isEmpty()) {
-                    Message(
-                        text = "「$query」に一致するポケモンがいません",
-                        description = "綴りを確認するか、別の語で試してください",
-                    )
-                } else {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(filtered, key = { it.url }) { pokemon ->
-                            Text(
-                                text = pokemon.name,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                            )
-                            HorizontalDivider()
-                        }
-                    }
-                }
+                LoadedList(uiState = uiState, query = query, onLoadMore = onLoadMore)
             }
 
         is PokemonListUiState.Failed ->
@@ -98,6 +87,62 @@ private fun PokemonList(
                 onRetry = onRetry.takeIf { uiState.canRetry },
                 modifier = modifier,
             )
+    }
+}
+
+@Composable
+private fun LoadedList(
+    uiState: PokemonListUiState.Loaded,
+    query: String,
+    onLoadMore: () -> Unit,
+) {
+    val filtered = uiState.pokemon.filter { it.name.contains(query, ignoreCase = true) }
+
+    if (filtered.isEmpty()) {
+        Message(
+            text = "「$query」に一致するポケモンがいません",
+            description = "綴りを確認するか、別の語で試してください",
+        )
+        return
+    }
+
+    val listState = rememberLazyListState()
+
+    // 絞り込み中は続きを読まない。手元にある分から選んでいる最中なので。
+    if (query.isEmpty() && uiState.hasMore) {
+        LaunchedEffect(listState, uiState.pokemon.size) {
+            snapshotFlow {
+                listState.layoutInfo.visibleItemsInfo
+                    .lastOrNull()
+                    ?.index
+            }.collect { lastVisible ->
+                if (lastVisible != null && lastVisible >= uiState.pokemon.size - PREFETCH_DISTANCE) {
+                    onLoadMore()
+                }
+            }
+        }
+    }
+
+    LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+        items(filtered, key = { it.url }) { pokemon ->
+            Text(
+                text = pokemon.name,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+            )
+            HorizontalDivider()
+        }
+
+        if (uiState.isLoadingMore) {
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
     }
 }
 
@@ -166,10 +211,25 @@ private val SAMPLE = listOf(
 private fun PokemonListLoadedPreview() {
     MaterialTheme {
         PokemonList(
-            uiState = PokemonListUiState.Loaded(SAMPLE),
+            uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = true),
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onLoadMore = {},
+        )
+    }
+}
+
+@Preview(name = "追加取得中", showBackground = true)
+@Composable
+private fun PokemonListLoadingMorePreview() {
+    MaterialTheme {
+        PokemonList(
+            uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = true, isLoadingMore = true),
+            query = "",
+            onQueryChange = {},
+            onRetry = {},
+            onLoadMore = {},
         )
     }
 }
@@ -179,10 +239,11 @@ private fun PokemonListLoadedPreview() {
 private fun PokemonListNoMatchPreview() {
     MaterialTheme {
         PokemonList(
-            uiState = PokemonListUiState.Loaded(SAMPLE),
+            uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = false),
             query = "zzzz",
             onQueryChange = {},
             onRetry = {},
+            onLoadMore = {},
         )
     }
 }
@@ -196,6 +257,7 @@ private fun PokemonListEmptyPreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onLoadMore = {},
         )
     }
 }
@@ -209,6 +271,7 @@ private fun PokemonListFailedPreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onLoadMore = {},
         )
     }
 }
@@ -222,6 +285,7 @@ private fun PokemonListUnrecoverablePreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onLoadMore = {},
         )
     }
 }
@@ -235,6 +299,7 @@ private fun PokemonListLoadingPreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onLoadMore = {},
         )
     }
 }

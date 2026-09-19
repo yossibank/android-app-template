@@ -9,6 +9,8 @@ sealed interface PokemonListUiState {
 
     data class Loaded(
         val pokemon: List<PokemonSummary>,
+        val hasMore: Boolean,
+        val isLoadingMore: Boolean = false,
     ) : PokemonListUiState
 
     data class Failed(

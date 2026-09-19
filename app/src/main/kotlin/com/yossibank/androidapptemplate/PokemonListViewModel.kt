@@ -2,7 +2,6 @@ package com.yossibank.androidapptemplate
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yossibank.shared.PokemonApi
 import com.yossibank.shared.PokemonListResult
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -13,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PokemonListViewModel(
-    private val fetchPage: suspend () -> PokemonListResult = { PokemonApi().fetchPage() },
+    private val paging: PokemonPaging = SharedPokemonPaging(),
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow<PokemonListUiState>(PokemonListUiState.Loading)
     val uiState: StateFlow<PokemonListUiState> = mutableUiState.asStateFlow()
@@ -28,29 +27,53 @@ class PokemonListViewModel(
         loading?.cancel()
         loading = viewModelScope.launch {
             mutableUiState.value = PokemonListUiState.Loading
+            paging.reset()
 
-            val next = try {
-                when (val result = fetchPage()) {
-                    is PokemonListResult.Loaded ->
-                        if (result.pokemon.isEmpty()) {
-                            PokemonListUiState.Empty
-                        } else {
-                            PokemonListUiState.Loaded(result.pokemon)
-                        }
-                    is PokemonListResult.Failed -> result.toUiState()
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                PokemonListUiState.Failed(
-                    message = "データを読み取れませんでした",
-                    canRetry = false,
-                )
-            }
+            val next = nextPage()
 
             ensureActive()
             mutableUiState.value = next
         }
+    }
+
+    fun loadMore() {
+        val current = mutableUiState.value
+
+        if (current !is PokemonListUiState.Loaded || !current.hasMore) return
+        if (loading?.isActive == true) return
+
+        loading = viewModelScope.launch {
+            mutableUiState.value = current.copy(isLoadingMore = true)
+
+            val next = nextPage()
+
+            ensureActive()
+            // 追加取得が失敗しても、読み込めている分は残す。
+            mutableUiState.value = if (next is PokemonListUiState.Loaded) next else current
+        }
+    }
+
+    private suspend fun nextPage(): PokemonListUiState = try {
+        when (val result = paging.loadNext()) {
+            is PokemonListResult.Loaded ->
+                if (result.pokemon.isEmpty()) {
+                    PokemonListUiState.Empty
+                } else {
+                    PokemonListUiState.Loaded(
+                        pokemon = result.pokemon,
+                        hasMore = result.hasMore,
+                    )
+                }
+
+            is PokemonListResult.Failed -> result.toUiState()
+        }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        PokemonListUiState.Failed(
+            message = "データを読み取れませんでした",
+            canRetry = false,
+        )
     }
 }
 
