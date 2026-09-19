@@ -67,22 +67,11 @@ class PokemonListViewModel(
     }
 }
 
-private fun PokemonListResult.Failed.toUiState(): PokemonListUiState.Failed = when (this) {
-    is PokemonListResult.Failed.Offline ->
-        PokemonListUiState.Failed(
-            message = "接続を確認してください",
-            canRetry = true,
-        )
-
-    is PokemonListResult.Failed.Server ->
-        PokemonListUiState.Failed(
-            message = "サーバーが応答しませんでした（$statusCode）",
-            canRetry = true,
-        )
-
-    is PokemonListResult.Failed.Unexpected ->
-        PokemonListUiState.Failed(
-            message = "データを読み取れませんでした",
-            canRetry = false,
-        )
-}
+private fun PokemonListResult.Failed.toUiState(): PokemonListUiState.Failed = PokemonListUiState.Failed(
+    message = when (this) {
+        is PokemonListResult.Failed.Offline -> "接続を確認してください"
+        is PokemonListResult.Failed.Server -> "サーバーが応答しませんでした（$statusCode）"
+        is PokemonListResult.Failed.Unexpected -> "データを読み取れませんでした"
+    },
+    canRetry = canRetry,
+)
