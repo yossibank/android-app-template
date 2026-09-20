@@ -11,11 +11,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,7 +46,7 @@ fun PokemonListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var query by rememberSaveable { mutableStateOf("") }
 
-    PokemonList(
+    PokemonListScaffold(
         uiState = uiState,
         query = query,
         onQueryChange = { query = it },
@@ -51,6 +54,40 @@ fun PokemonListScreen(
         onLoadMore = viewModel::loadMore,
         modifier = modifier,
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PokemonListScaffold(
+    uiState: PokemonListUiState,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onRetry: () -> Unit,
+    onLoadMore: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(R.string.pokemon_list_title)) },
+                actions = {
+                    TextButton(onClick = onRetry) {
+                        Text(text = stringResource(R.string.action_reload))
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
+        PokemonList(
+            uiState = uiState,
+            query = query,
+            onQueryChange = onQueryChange,
+            onRetry = onRetry,
+            onLoadMore = onLoadMore,
+            modifier = Modifier.padding(innerPadding),
+        )
+    }
 }
 
 @Composable
@@ -212,7 +249,7 @@ private val SAMPLE = listOf(
 @Composable
 private fun PokemonListLoadedPreview() {
     AppTheme {
-        PokemonList(
+        PokemonListScaffold(
             uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = true),
             query = "",
             onQueryChange = {},
@@ -226,7 +263,7 @@ private fun PokemonListLoadedPreview() {
 @Composable
 private fun PokemonListLoadedDarkPreview() {
     AppTheme {
-        PokemonList(
+        PokemonListScaffold(
             uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = true),
             query = "",
             onQueryChange = {},
@@ -240,7 +277,7 @@ private fun PokemonListLoadedDarkPreview() {
 @Composable
 private fun PokemonListLoadingMorePreview() {
     AppTheme {
-        PokemonList(
+        PokemonListScaffold(
             uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = true, isLoadingMore = true),
             query = "",
             onQueryChange = {},
@@ -254,7 +291,7 @@ private fun PokemonListLoadingMorePreview() {
 @Composable
 private fun PokemonListNoMatchPreview() {
     AppTheme {
-        PokemonList(
+        PokemonListScaffold(
             uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = false),
             query = "zzzz",
             onQueryChange = {},
@@ -268,7 +305,7 @@ private fun PokemonListNoMatchPreview() {
 @Composable
 private fun PokemonListEmptyPreview() {
     AppTheme {
-        PokemonList(
+        PokemonListScaffold(
             uiState = PokemonListUiState.Empty,
             query = "",
             onQueryChange = {},
@@ -282,7 +319,7 @@ private fun PokemonListEmptyPreview() {
 @Composable
 private fun PokemonListFailedPreview() {
     AppTheme {
-        PokemonList(
+        PokemonListScaffold(
             uiState = PokemonListUiState.Failed(R.string.error_offline, canRetry = true),
             query = "",
             onQueryChange = {},
@@ -296,7 +333,7 @@ private fun PokemonListFailedPreview() {
 @Composable
 private fun PokemonListUnrecoverablePreview() {
     AppTheme {
-        PokemonList(
+        PokemonListScaffold(
             uiState = PokemonListUiState.Failed(R.string.error_unreadable, canRetry = false),
             query = "",
             onQueryChange = {},
@@ -310,7 +347,7 @@ private fun PokemonListUnrecoverablePreview() {
 @Composable
 private fun PokemonListLoadingPreview() {
     AppTheme {
-        PokemonList(
+        PokemonListScaffold(
             uiState = PokemonListUiState.Loading,
             query = "",
             onQueryChange = {},

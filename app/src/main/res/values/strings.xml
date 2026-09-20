@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Android App Template</string>
 
+    <string name="pokemon_list_title">ポケモン</string>
     <string name="pokemon_list_search_hint">名前で絞り込む</string>
     <string name="pokemon_list_empty_title">ポケモンがいません</string>
     <string name="pokemon_list_empty_description">取得できましたが 1 件もありませんでした</string>

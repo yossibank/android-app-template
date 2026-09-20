@@ -37,9 +37,9 @@ flowchart LR
 | --- | --- |
 | `PokemonListUiState.kt` | 画面の状態（読み込み中 / 一覧 / 失敗） |
 | `PokemonListViewModel.kt` | 取得と状態の保持。構成変更を跨いで生き残る |
-| `PokemonListScreen.kt` | 状態を持つ Composable と、描画だけの Composable |
+| `PokemonListScreen.kt` | 状態を持つ Composable と、描画だけの Composable。Scaffold と AppBar も持つ |
 | `TextMatching.kt` | 絞り込みの一致規則。iOS の `localizedStandardContains` に合わせる |
-| `MainActivity.kt` | 入口。Scaffold と画面の呼び出しだけ |
+| `MainActivity.kt` | 入口。テーマと画面の呼び出しだけ |
 
 ## ディレクトリ
 
