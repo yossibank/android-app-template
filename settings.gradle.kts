@@ -18,6 +18,9 @@ dependencyResolutionManagement {
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/yossibank/kmp-app-template")
+            content {
+                includeGroup("com.yossibank")
+            }
             credentials {
                 username = providers
                     .gradleProperty("gpr.user")
