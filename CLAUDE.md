@@ -46,6 +46,7 @@ gradle/           依存とバージョン
 ## 全体ルール
 
 - 変更したら `make verify` を通す。通らないものは完了ではない。
+- 警告やテスト結果を確かめるときは `--rerun-tasks` を付ける。増分では UP-TO-DATE で素通りする。
 - 共通ロジックは kmp-app-template 側に置く。ここには Android 固有のものだけ。
 - バージョンを `gradle/libs.versions.toml` 以外で指定しない。
 - `org.jetbrains.kotlin.android` を適用しない（AGP 9 でエラーになる）。
