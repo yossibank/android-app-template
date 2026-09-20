@@ -38,6 +38,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core"))
     implementation(libs.shared)
 
     implementation(libs.androidx.core.ktx)

@@ -39,3 +39,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "android-app-template"
 include(":app")
+include(":core")

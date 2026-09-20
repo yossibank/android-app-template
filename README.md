@@ -23,23 +23,27 @@ flowchart LR
 ```mermaid
 flowchart LR
     SHARED["shared<br/><i>共通コア</i>"]
+    CORE[":core<br/><i>画面をまたぐ仕組み</i>"]
     VM["PokemonListViewModel"]
     SCREEN["PokemonListScreen"]
     ACT["MainActivity"]
     SHARED --> VM
+    CORE --> VM
     VM -->|"StateFlow&lt;PokemonListUiState&gt;"| SCREEN
     SCREEN --> ACT
 ```
 
-単一モジュール（`:app`）。1 画面を 3 つのファイルに分ける。
+`:app` と `:core` の 2 モジュール。1 画面を 3 つのファイルに分ける。
 
-| ファイル | 役割 |
-| --- | --- |
-| `PokemonListUiState.kt` | 画面の状態（読み込み中 / 一覧 / 失敗） |
-| `PokemonListViewModel.kt` | 取得と状態の保持。構成変更を跨いで生き残る |
-| `PokemonListScreen.kt` | 状態を持つ Composable と、描画だけの Composable。Scaffold と AppBar も持つ |
-| `TextMatching.kt` | 絞り込みの一致規則。iOS の `localizedStandardContains` に合わせる |
-| `MainActivity.kt` | 入口。テーマと画面の呼び出しだけ |
+| ファイル | モジュール | 役割 |
+| --- | --- | --- |
+| `PokemonListUiState.kt` | `:app` | 画面の状態（読み込み中 / 空 / 一覧 / 失敗） |
+| `PokemonListViewModel.kt` | `:app` | 取得と状態の保持。構成変更を跨いで生き残る |
+| `PokemonListScreen.kt` | `:app` | 状態を持つ Composable と、描画だけの Composable。Scaffold と AppBar も持つ |
+| `PokemonPaging.kt` | `:app` | 共通コアの境界。テストで差し替える |
+| `MainActivity.kt` | `:app` | 入口。テーマと画面の呼び出しだけ |
+| `LatestResult.kt` | `:core` | 最後に始めた取得の結果だけを状態に書く |
+| `TextMatching.kt` | `:core` | 絞り込みの一致規則。iOS の `localizedStandardContains` に合わせる |
 
 ## ディレクトリ
 
@@ -49,6 +53,11 @@ app/
 └── src/
     ├── main/kotlin/        # 画面
     └── test/kotlin/        # ViewModel のテスト
+core/
+├── build.gradle.kts        # 純 JVM モジュール
+└── src/
+    ├── main/kotlin/        # 画面をまたいで使う仕組み
+    └── test/kotlin/        # その単体テスト
 gradle/
 └── libs.versions.toml      # 依存とバージョン（ここにのみ書く）
 ```
@@ -65,9 +74,6 @@ gradle/
 | `make format` | ktlint で自動修正 |
 
 ## 環境
-
-バージョンはここに書き写さない。更新は Renovate が出所のファイルだけを直すので、
-写した値は必ず古くなる。
 
 | 項目 | 出所 |
 | --- | --- |

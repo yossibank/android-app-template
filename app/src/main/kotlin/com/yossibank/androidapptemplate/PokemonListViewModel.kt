@@ -2,6 +2,7 @@ package com.yossibank.androidapptemplate
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yossibank.androidapptemplate.core.LatestResult
 import com.yossibank.shared.PokemonListResult
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.core
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -22,13 +22,11 @@ class LatestResult<T>(
     val isRunning: Boolean
         get() = job?.isActive == true
 
-    /** 進行中のものを捨てて始める。 */
     fun restart(produce: suspend () -> T) {
         job?.cancel()
         job = write(produce)
     }
 
-    /** 進行中のものがあれば何もしない。 */
     fun startIfIdle(produce: suspend () -> T) {
         if (isRunning) return
 

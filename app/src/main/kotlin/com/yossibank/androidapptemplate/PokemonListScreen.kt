@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yossibank.androidapptemplate.core.standardContains
 import com.yossibank.shared.generated.model.PokemonSummary
 
 private const val PREFETCH_DISTANCE = 3

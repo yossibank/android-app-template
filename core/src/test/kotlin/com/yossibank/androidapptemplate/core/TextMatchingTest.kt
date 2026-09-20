@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.core
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
