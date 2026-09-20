@@ -6,10 +6,10 @@ ifdef CI
 GRADLE_FLAGS := --rerun-tasks
 endif
 
-.PHONY: verify lint format build test clean
+.PHONY: verify lint format build release test clean
 
 verify:
-	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest $(GRADLE_FLAGS)
+	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest assembleRelease $(GRADLE_FLAGS)
 
 lint:
 	$(GRADLE) ktlintCheck $(GRADLE_FLAGS)
@@ -19,6 +19,9 @@ format:
 
 build:
 	$(GRADLE) assembleDebug $(GRADLE_FLAGS)
+
+release:
+	$(GRADLE) assembleRelease $(GRADLE_FLAGS)
 
 test:
 	$(GRADLE) testDebugUnitTest $(GRADLE_FLAGS)

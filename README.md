@@ -57,8 +57,9 @@ gradle/
 
 | コマンド | 内容 |
 | --- | --- |
-| `make verify` | ktlint + ビルド + ユニットテスト（変更後はこれを通す） |
+| `make verify` | ktlint + デバッグ / リリースビルド + ユニットテスト（変更後はこれを通す） |
 | `make build` | デバッグ APK のみ |
+| `make release` | リリース APK のみ（R8 有効） |
 | `make test` | ユニットテストのみ |
 | `make lint` | ktlint によるチェック（`make verify` に含まれる） |
 | `make format` | ktlint で自動修正 |

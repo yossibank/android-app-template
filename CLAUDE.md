@@ -47,6 +47,9 @@ gradle/           依存とバージョン
 
 - 変更したら `make verify` を通す。通らないものは完了ではない。
 - 警告やテスト結果を確かめるときは `--rerun-tasks` を付ける。増分では UP-TO-DATE で素通りする。
+  CI では `CI` が立つので Makefile が自動で付ける。
+- `verify` には `assembleRelease` が入っている。R8 は有効で、keep ルール無しで通る。
+  外すと縮小の壊れに気づけない。
 - 共通ロジックは kmp-app-template 側に置く。ここには Android 固有のものだけ。
 - 同じ画面が ios-app-template にもある。挙動を変えるときは向こうに合わせる。
   絞り込みの一致規則は `standardContains`（大文字小文字と発音記号を無視）で、
