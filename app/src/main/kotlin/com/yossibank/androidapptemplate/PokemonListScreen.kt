@@ -1,5 +1,6 @@
 package com.yossibank.androidapptemplate
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -210,7 +211,21 @@ private val SAMPLE = listOf(
 @Preview(name = "一覧", showBackground = true)
 @Composable
 private fun PokemonListLoadedPreview() {
-    MaterialTheme {
+    AppTheme {
+        PokemonList(
+            uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = true),
+            query = "",
+            onQueryChange = {},
+            onRetry = {},
+            onLoadMore = {},
+        )
+    }
+}
+
+@Preview(name = "一覧（ダーク）", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+@Composable
+private fun PokemonListLoadedDarkPreview() {
+    AppTheme {
         PokemonList(
             uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = true),
             query = "",
@@ -224,7 +239,7 @@ private fun PokemonListLoadedPreview() {
 @Preview(name = "追加取得中", showBackground = true)
 @Composable
 private fun PokemonListLoadingMorePreview() {
-    MaterialTheme {
+    AppTheme {
         PokemonList(
             uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = true, isLoadingMore = true),
             query = "",
@@ -238,7 +253,7 @@ private fun PokemonListLoadingMorePreview() {
 @Preview(name = "絞り込みで0件", showBackground = true)
 @Composable
 private fun PokemonListNoMatchPreview() {
-    MaterialTheme {
+    AppTheme {
         PokemonList(
             uiState = PokemonListUiState.Loaded(SAMPLE, hasMore = false),
             query = "zzzz",
@@ -252,7 +267,7 @@ private fun PokemonListNoMatchPreview() {
 @Preview(name = "空", showBackground = true)
 @Composable
 private fun PokemonListEmptyPreview() {
-    MaterialTheme {
+    AppTheme {
         PokemonList(
             uiState = PokemonListUiState.Empty,
             query = "",
@@ -266,7 +281,7 @@ private fun PokemonListEmptyPreview() {
 @Preview(name = "失敗（再試行できる）", showBackground = true)
 @Composable
 private fun PokemonListFailedPreview() {
-    MaterialTheme {
+    AppTheme {
         PokemonList(
             uiState = PokemonListUiState.Failed(R.string.error_offline, canRetry = true),
             query = "",
@@ -280,7 +295,7 @@ private fun PokemonListFailedPreview() {
 @Preview(name = "失敗（再試行できない）", showBackground = true)
 @Composable
 private fun PokemonListUnrecoverablePreview() {
-    MaterialTheme {
+    AppTheme {
         PokemonList(
             uiState = PokemonListUiState.Failed(R.string.error_unreadable, canRetry = false),
             query = "",
@@ -294,7 +309,7 @@ private fun PokemonListUnrecoverablePreview() {
 @Preview(name = "読み込み中", showBackground = true)
 @Composable
 private fun PokemonListLoadingPreview() {
-    MaterialTheme {
+    AppTheme {
         PokemonList(
             uiState = PokemonListUiState.Loading,
             query = "",
