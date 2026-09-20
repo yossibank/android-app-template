@@ -98,7 +98,7 @@ private fun LoadedList(
     query: String,
     onLoadMore: () -> Unit,
 ) {
-    val filtered = uiState.pokemon.filter { it.name.contains(query, ignoreCase = true) }
+    val filtered = uiState.pokemon.filter { it.name.standardContains(query) }
 
     if (filtered.isEmpty()) {
         Message(
