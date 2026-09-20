@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Android App Template</string>
+
+    <string name="pokemon_list_search_hint">名前で絞り込む</string>
+    <string name="pokemon_list_empty_title">ポケモンがいません</string>
+    <string name="pokemon_list_empty_description">取得できましたが 1 件もありませんでした</string>
+    <string name="pokemon_list_no_match_title">「%1$s」に一致するポケモンがいません</string>
+    <string name="pokemon_list_no_match_description">綴りを確認するか、別の語で試してください</string>
+
+    <string name="action_reload">再取得</string>
+
+    <string name="error_offline">接続を確認してください</string>
+    <string name="error_server">サーバーが応答しませんでした（%1$d）</string>
+    <string name="error_unreadable">データを読み取れませんでした</string>
+    <string name="error_unexpected">予期しないエラーが発生しました</string>
 </resources>

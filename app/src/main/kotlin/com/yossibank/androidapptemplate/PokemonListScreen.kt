@@ -25,6 +25,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -69,8 +70,8 @@ private fun PokemonList(
         PokemonListUiState.Empty ->
             Searchable(query = query, onQueryChange = onQueryChange, modifier = modifier) {
                 Message(
-                    text = "ポケモンがいません",
-                    description = "取得できましたが 1 件もありませんでした",
+                    text = stringResource(R.string.pokemon_list_empty_title),
+                    description = stringResource(R.string.pokemon_list_empty_description),
                     onRetry = onRetry,
                 )
             }
@@ -82,7 +83,7 @@ private fun PokemonList(
 
         is PokemonListUiState.Failed ->
             Message(
-                text = uiState.message,
+                text = stringResource(uiState.messageRes, *uiState.formatArgs.toTypedArray()),
                 color = MaterialTheme.colorScheme.error,
                 onRetry = onRetry.takeIf { uiState.canRetry },
                 modifier = modifier,
@@ -100,8 +101,8 @@ private fun LoadedList(
 
     if (filtered.isEmpty()) {
         Message(
-            text = "「$query」に一致するポケモンがいません",
-            description = "綴りを確認するか、別の語で試してください",
+            text = stringResource(R.string.pokemon_list_no_match_title, query),
+            description = stringResource(R.string.pokemon_list_no_match_description),
         )
         return
     }
@@ -157,7 +158,7 @@ private fun Searchable(
         OutlinedTextField(
             value = query,
             onValueChange = onQueryChange,
-            placeholder = { Text(text = "名前で絞り込む") },
+            placeholder = { Text(text = stringResource(R.string.pokemon_list_search_hint)) },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
@@ -194,7 +195,7 @@ private fun Message(
 
         if (onRetry != null) {
             TextButton(onClick = onRetry) {
-                Text(text = "再取得")
+                Text(text = stringResource(R.string.action_reload))
             }
         }
     }
@@ -267,7 +268,7 @@ private fun PokemonListEmptyPreview() {
 private fun PokemonListFailedPreview() {
     MaterialTheme {
         PokemonList(
-            uiState = PokemonListUiState.Failed("接続を確認してください", canRetry = true),
+            uiState = PokemonListUiState.Failed(R.string.error_offline, canRetry = true),
             query = "",
             onQueryChange = {},
             onRetry = {},
@@ -281,7 +282,7 @@ private fun PokemonListFailedPreview() {
 private fun PokemonListUnrecoverablePreview() {
     MaterialTheme {
         PokemonList(
-            uiState = PokemonListUiState.Failed("データを読み取れませんでした", canRetry = false),
+            uiState = PokemonListUiState.Failed(R.string.error_unreadable, canRetry = false),
             query = "",
             onQueryChange = {},
             onRetry = {},

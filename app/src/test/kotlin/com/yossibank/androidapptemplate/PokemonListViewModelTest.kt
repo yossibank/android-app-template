@@ -138,7 +138,8 @@ class PokemonListViewModelTest {
         advanceUntilIdle()
 
         val uiState = model.uiState.value as PokemonListUiState.Failed
-        assertTrue("状態コードが読み取れない: ${uiState.message}", uiState.message.contains("503"))
+        assertEquals(R.string.error_server, uiState.messageRes)
+        assertEquals(listOf(503), uiState.formatArgs)
     }
 
     @Test
@@ -209,6 +210,9 @@ class PokemonListViewModelTest {
 
         advanceUntilIdle()
 
-        assertFalse((model.uiState.value as PokemonListUiState.Failed).canRetry)
+        val failed = model.uiState.value as PokemonListUiState.Failed
+
+        assertEquals(R.string.error_unexpected, failed.messageRes)
+        assertTrue(failed.canRetry)
     }
 }

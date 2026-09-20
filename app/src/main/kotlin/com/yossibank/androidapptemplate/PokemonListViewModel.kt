@@ -39,7 +39,7 @@ class PokemonListViewModel(
             val next = nextPage()
 
             // 追加取得が失敗しても、読み込めている分は残す。
-            if (next is PokemonListUiState.Loaded) next else current
+            next as? PokemonListUiState.Loaded ?: current
         }
     }
 
@@ -59,19 +59,21 @@ class PokemonListViewModel(
         }
     } catch (e: CancellationException) {
         throw e
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         PokemonListUiState.Failed(
-            message = "データを読み取れませんでした",
-            canRetry = false,
+            messageRes = R.string.error_unexpected,
+            canRetry = true,
         )
     }
 }
 
-private fun PokemonListResult.Failed.toUiState(): PokemonListUiState.Failed = PokemonListUiState.Failed(
-    message = when (this) {
-        is PokemonListResult.Failed.Offline -> "接続を確認してください"
-        is PokemonListResult.Failed.Server -> "サーバーが応答しませんでした（$statusCode）"
-        is PokemonListResult.Failed.Unexpected -> "データを読み取れませんでした"
-    },
-    canRetry = canRetry,
-)
+private fun PokemonListResult.Failed.toUiState(): PokemonListUiState.Failed = when (this) {
+    is PokemonListResult.Failed.Offline ->
+        PokemonListUiState.Failed(R.string.error_offline, canRetry)
+
+    is PokemonListResult.Failed.Server ->
+        PokemonListUiState.Failed(R.string.error_server, canRetry, listOf(statusCode))
+
+    is PokemonListResult.Failed.Unexpected ->
+        PokemonListUiState.Failed(R.string.error_unreadable, canRetry)
+}
