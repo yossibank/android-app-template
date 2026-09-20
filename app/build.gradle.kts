@@ -37,6 +37,12 @@ android {
     }
 }
 
+androidComponents {
+    beforeVariants { variant ->
+        variant.enableAndroidTest = false
+    }
+}
+
 dependencies {
     implementation(project(":core"))
     implementation(libs.shared)

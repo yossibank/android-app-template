@@ -54,6 +54,8 @@ gradle/           依存とバージョン
 - 同じ画面が ios-app-template にもある。挙動を変えるときは向こうに合わせる。
   絞り込みの一致規則は `standardContains`（大文字小文字と発音記号を無視）で、
   iOS の `localizedStandardContains` と揃えてある。素の `contains` を使わない。
+- androidTest は無効化している。インストルメンテーションテストを書くなら
+  `app/build.gradle.kts` の `enableAndroidTest` を戻す。
 - バージョンを `gradle/libs.versions.toml` 以外で指定しない。
 - `org.jetbrains.kotlin.android` を適用しない（AGP 9 でエラーになる）。
 - `.gitignore` に `*.jar` を追加しない（`gradle-wrapper.jar` が消える）。
