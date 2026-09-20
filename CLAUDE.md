@@ -17,7 +17,7 @@ kmp-app-template（共通ロジック）・ios-app-template と合わせた 3 �
 | テスト | JUnit 4 + kotlinx-coroutines-test |
 | 依存管理 | Gradle（バージョンカタログ） |
 
-バージョンは [README.md](README.md)。
+バージョンは [gradle/libs.versions.toml](gradle/libs.versions.toml)。
 
 ## プロジェクト構成
 

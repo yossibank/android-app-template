@@ -65,12 +65,13 @@ gradle/
 
 ## 環境
 
-| 項目 | バージョン |
+バージョンはここに書き写さない。更新は Renovate が出所のファイルだけを直すので、
+写した値は必ず古くなる。
+
+| 項目 | 出所 |
 | --- | --- |
-| Gradle | 9.7.1 |
-| Android Gradle Plugin | 9.4.0 |
-| Kotlin | 2.4.10 |
-| compileSdk / targetSdk | 37 |
-| minSdk | 24 |
-| Compose BOM | 2026.08.00 |
+| AGP・Kotlin・Compose BOM・依存 | [gradle/libs.versions.toml](gradle/libs.versions.toml) |
+| Gradle | [gradle/wrapper/gradle-wrapper.properties](gradle/wrapper/gradle-wrapper.properties) |
+| compileSdk / targetSdk / minSdk・Java | [app/build.gradle.kts](app/build.gradle.kts) |
+| JDK（CI） | [.github/workflows/verify.yml](.github/workflows/verify.yml) |
 | 認証 | `~/.gradle/gradle.properties` に `gpr.user` / `gpr.token`（共通コアの取得に必要） |
