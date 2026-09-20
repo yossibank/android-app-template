@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 
 /**
  * MaterialTheme の colorScheme 既定値は端末の設定に関係なくライトのままなので、
- * ここで明示的に切り替える。引数は、プレビューで両方を並べるためにある。
+ * ここで明示的に切り替える。
  */
 @Composable
 fun AppTheme(
