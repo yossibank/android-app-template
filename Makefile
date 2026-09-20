@@ -1,19 +1,27 @@
+GRADLE := ./gradlew
+
+# CI は増分を当てにしない。UP-TO-DATE / FROM-CACHE で素通りすると、
+# 警告もテスト結果も出ないまま green になる。
+ifdef CI
+GRADLE_FLAGS := --rerun-tasks
+endif
+
 .PHONY: verify lint format build test clean
 
 verify:
-	./gradlew ktlintCheck assembleDebug testDebugUnitTest
+	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest $(GRADLE_FLAGS)
 
 lint:
-	./gradlew ktlintCheck
+	$(GRADLE) ktlintCheck $(GRADLE_FLAGS)
 
 format:
-	./gradlew ktlintFormat
+	$(GRADLE) ktlintFormat
 
 build:
-	./gradlew assembleDebug
+	$(GRADLE) assembleDebug $(GRADLE_FLAGS)
 
 test:
-	./gradlew testDebugUnitTest
+	$(GRADLE) testDebugUnitTest $(GRADLE_FLAGS)
 
 clean:
-	./gradlew clean
+	$(GRADLE) clean
