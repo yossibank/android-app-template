@@ -8,6 +8,8 @@
     <string name="pokemon_list_empty_description">取得できましたが 1 件もありませんでした</string>
     <string name="pokemon_list_no_match_title">「%1$s」に一致するポケモンがいません</string>
     <string name="pokemon_list_no_match_description">綴りを確認するか、別の語で試してください</string>
+    <string name="pokemon_list_number">#%1$03d</string>
+    <string name="pokemon_list_total">合計 %1$d</string>
 
     <string name="action_reload">再取得</string>
 
@@ -15,4 +17,25 @@
     <string name="error_server">サーバーが応答しませんでした（%1$d）</string>
     <string name="error_unreadable">データを読み取れませんでした</string>
     <string name="error_unexpected">予期しないエラーが発生しました</string>
+
+    <string name="type_normal">ノーマル</string>
+    <string name="type_fire">ほのお</string>
+    <string name="type_water">みず</string>
+    <string name="type_electric">でんき</string>
+    <string name="type_grass">くさ</string>
+    <string name="type_ice">こおり</string>
+    <string name="type_fighting">かくとう</string>
+    <string name="type_poison">どく</string>
+    <string name="type_ground">じめん</string>
+    <string name="type_flying">ひこう</string>
+    <string name="type_psychic">エスパー</string>
+    <string name="type_bug">むし</string>
+    <string name="type_rock">いわ</string>
+    <string name="type_ghost">ゴースト</string>
+    <string name="type_dragon">ドラゴン</string>
+    <string name="type_dark">あく</string>
+    <string name="type_steel">はがね</string>
+    <string name="type_fairy">フェアリー</string>
+    <string name="type_unknown">不明</string>
+
 </resources>

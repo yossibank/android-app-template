@@ -1,18 +1,28 @@
 package com.yossibank.androidapptemplate
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -28,16 +38,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
 import com.yossibank.androidapptemplate.core.standardContains
-import com.yossibank.shared.generated.model.PokemonSummary
-
-private const val PREFETCH_DISTANCE = 3
+import com.yossibank.shared.PokemonBaseStat
+import com.yossibank.shared.PokemonEntry
+import com.yossibank.shared.PokemonPager
+import com.yossibank.shared.PokemonStatKind
+import com.yossibank.shared.PokemonTypeKind
 
 @Composable
 fun PokemonListScreen(
@@ -136,7 +151,9 @@ private fun LoadedList(
     query: String,
     onLoadMore: () -> Unit,
 ) {
-    val filtered = uiState.pokemon.filter { it.name.standardContains(query) }
+    val filtered = uiState.pokemon.filter {
+        it.displayName.standardContains(query) || it.name.standardContains(query)
+    }
 
     if (filtered.isEmpty()) {
         Message(
@@ -156,30 +173,30 @@ private fun LoadedList(
                     .lastOrNull()
                     ?.index
             }.collect { lastVisible ->
-                if (lastVisible != null && lastVisible >= uiState.pokemon.size - PREFETCH_DISTANCE) {
+                val threshold = uiState.pokemon.size - PokemonPager.PREFETCH_DISTANCE
+
+                if (lastVisible != null && lastVisible >= threshold) {
                     onLoadMore()
                 }
             }
         }
     }
 
-    LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-        itemsIndexed(filtered, key = { _, pokemon -> pokemon.url }) { index, pokemon ->
-            Text(
-                text = pokemon.name,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-            )
-
-            if (index < filtered.lastIndex) {
-                HorizontalDivider()
-            }
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 8.dp),
+    ) {
+        items(filtered, key = { it.id }) { pokemon ->
+            PokemonRow(pokemon)
         }
 
         if (uiState.isLoadingMore) {
             item {
                 Box(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
@@ -187,6 +204,96 @@ private fun LoadedList(
             }
         }
     }
+}
+
+@Composable
+private fun PokemonRow(pokemon: PokemonEntry) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
+    ) {
+        Row(
+            modifier = Modifier.padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Sprite(pokemon)
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = pokemon.displayName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+
+                if (pokemon.types.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        pokemon.types.forEach { TypeBadge(it) }
+                    }
+                }
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = stringResource(R.string.pokemon_list_number, pokemon.id),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                if (pokemon.baseStats.isNotEmpty()) {
+                    Text(
+                        text = stringResource(R.string.pokemon_list_total, pokemon.totalBaseStat),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Sprite(pokemon: PokemonEntry) {
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (pokemon.spriteUrl != null) {
+            AsyncImage(
+                model = pokemon.spriteUrl,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            Text(
+                text = pokemon.displayName.take(1),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TypeBadge(type: PokemonTypeKind) {
+    Text(
+        text = stringResource(type.labelRes),
+        style = MaterialTheme.typography.labelSmall,
+        color = Color.White,
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(type.badgeColor)
+            .padding(horizontal = 10.dp, vertical = 3.dp),
+    )
 }
 
 @Composable
@@ -243,13 +350,37 @@ private fun Message(
     }
 }
 
-private val SAMPLE = listOf(
-    PokemonSummary("bulbasaur", "https://pokeapi.co/api/v2/pokemon/1/"),
-    PokemonSummary("ivysaur", "https://pokeapi.co/api/v2/pokemon/2/"),
-    PokemonSummary("venusaur", "https://pokeapi.co/api/v2/pokemon/3/"),
+private fun sample(
+    id: Int,
+    japanese: String,
+    name: String,
+    types: List<PokemonTypeKind>,
+    stats: List<Int>,
+) = PokemonEntry(
+    id = id,
+    name = name,
+    japaneseName = japanese,
+    spriteUrl = null,
+    types = types,
+    baseStats = listOf(
+        PokemonStatKind.HP,
+        PokemonStatKind.ATTACK,
+        PokemonStatKind.DEFENSE,
+        PokemonStatKind.SPECIAL_ATTACK,
+        PokemonStatKind.SPECIAL_DEFENSE,
+        PokemonStatKind.SPEED,
+    ).zip(stats) { kind, value -> PokemonBaseStat(kind, value) },
 )
 
-@Preview(name = "一覧", showBackground = true)
+private val SAMPLE = listOf(
+    sample(1, "フシギダネ", "bulbasaur", listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON), listOf(45, 49, 49, 65, 65, 45)),
+    sample(4, "ヒトカゲ", "charmander", listOf(PokemonTypeKind.FIRE), listOf(39, 52, 43, 60, 50, 65)),
+    sample(7, "ゼニガメ", "squirtle", listOf(PokemonTypeKind.WATER), listOf(44, 48, 65, 50, 64, 43)),
+    sample(10, "キャタピー", "caterpie", listOf(PokemonTypeKind.BUG), listOf(45, 30, 35, 20, 20, 45)),
+    sample(25, "ピカチュウ", "pikachu", listOf(PokemonTypeKind.ELECTRIC), listOf(35, 55, 40, 50, 50, 90)),
+)
+
+@Preview(name = "一覧", showBackground = true, heightDp = 900)
 @Composable
 private fun PokemonListLoadedPreview() {
     AppTheme {
@@ -263,7 +394,12 @@ private fun PokemonListLoadedPreview() {
     }
 }
 
-@Preview(name = "一覧（ダーク）", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+@Preview(
+    name = "一覧（ダーク）",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    heightDp = 900,
+)
 @Composable
 private fun PokemonListLoadedDarkPreview() {
     AppTheme {
@@ -277,7 +413,33 @@ private fun PokemonListLoadedDarkPreview() {
     }
 }
 
-@Preview(name = "追加取得中", showBackground = true)
+@Preview(name = "詳細を引けなかった行", showBackground = true)
+@Composable
+private fun PokemonListDegradedPreview() {
+    AppTheme {
+        PokemonListScaffold(
+            uiState = PokemonListUiState.Loaded(
+                listOf(
+                    PokemonEntry(
+                        id = 132,
+                        name = "ditto",
+                        japaneseName = null,
+                        spriteUrl = null,
+                        types = emptyList(),
+                        baseStats = emptyList(),
+                    ),
+                ),
+                hasMore = false,
+            ),
+            query = "",
+            onQueryChange = {},
+            onRetry = {},
+            onLoadMore = {},
+        )
+    }
+}
+
+@Preview(name = "追加取得中", showBackground = true, heightDp = 900)
 @Composable
 private fun PokemonListLoadingMorePreview() {
     AppTheme {

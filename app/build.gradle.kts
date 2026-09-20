@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.bundles.lifecycle)
 
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.bundles.coil)
     implementation(libs.bundles.compose)
     debugImplementation(libs.androidx.compose.ui.tooling)
 

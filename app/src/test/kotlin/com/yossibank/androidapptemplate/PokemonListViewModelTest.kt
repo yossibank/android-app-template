@@ -1,7 +1,11 @@
 package com.yossibank.androidapptemplate
 
+import com.yossibank.shared.PokemonBaseStat
+import com.yossibank.shared.PokemonEntry
+import com.yossibank.shared.PokemonListFailure
 import com.yossibank.shared.PokemonListResult
-import com.yossibank.shared.generated.model.PokemonSummary
+import com.yossibank.shared.PokemonStatKind
+import com.yossibank.shared.PokemonTypeKind
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -38,12 +42,33 @@ private class StubPaging(
     }
 }
 
+private fun entries(names: Array<out String>) = names.mapIndexed { index, name ->
+    PokemonEntry(
+        id = index + 1,
+        name = name,
+        japaneseName = null,
+        spriteUrl = "https://img.example/${index + 1}.png",
+        types = listOf(PokemonTypeKind.GRASS),
+        baseStats = listOf(PokemonBaseStat(PokemonStatKind.HP, 45)),
+    )
+}
+
 private fun loaded(
     vararg names: String,
     hasMore: Boolean = false,
-) = PokemonListResult.Loaded(
-    pokemon = names.map { PokemonSummary(it, "https://example.com/$it") },
+) = PokemonListResult(
+    pokemon = entries(names),
     hasMore = hasMore,
+    failure = null,
+)
+
+private fun failed(
+    failure: PokemonListFailure,
+    vararg names: String,
+) = PokemonListResult(
+    pokemon = entries(names),
+    hasMore = true,
+    failure = failure,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -75,7 +100,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `結果が空なら Empty になる`() = runTest(dispatcher) {
-        val model = viewModel { PokemonListResult.Loaded(emptyList(), hasMore = false) }
+        val model = viewModel { PokemonListResult(emptyList(), hasMore = false, failure = null) }
 
         advanceUntilIdle()
 
@@ -112,7 +137,7 @@ class PokemonListViewModelTest {
     @Test
     fun `追加取得が失敗しても読み込めた分は残る`() = runTest(dispatcher) {
         val model = viewModel { index ->
-            if (index == 0) loaded("a", hasMore = true) else PokemonListResult.Failed.Offline
+            if (index == 0) loaded("a", hasMore = true) else failed(PokemonListFailure.Offline, "a")
         }
         advanceUntilIdle()
 
@@ -124,7 +149,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `接続できないときは再試行できる失敗になる`() = runTest(dispatcher) {
-        val model = viewModel { PokemonListResult.Failed.Offline }
+        val model = viewModel { failed(PokemonListFailure.Offline) }
 
         advanceUntilIdle()
 
@@ -133,7 +158,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `サーバーエラーは状態コードを文言に含める`() = runTest(dispatcher) {
-        val model = viewModel { PokemonListResult.Failed.Server(503) }
+        val model = viewModel { failed(PokemonListFailure.Server(503)) }
 
         advanceUntilIdle()
 
@@ -144,7 +169,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `解釈できない応答は再試行できない失敗になる`() = runTest(dispatcher) {
-        val model = viewModel { PokemonListResult.Failed.Unexpected }
+        val model = viewModel { failed(PokemonListFailure.Unexpected) }
 
         advanceUntilIdle()
 
@@ -184,7 +209,7 @@ class PokemonListViewModelTest {
                     delay(1_000)
                     loaded("古い")
                 } catch (e: Exception) {
-                    PokemonListResult.Failed.Unexpected
+                    failed(PokemonListFailure.Unexpected)
                 }
             } else {
                 loaded("新しい")

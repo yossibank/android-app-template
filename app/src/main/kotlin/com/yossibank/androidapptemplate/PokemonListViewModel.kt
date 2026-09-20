@@ -3,7 +3,7 @@ package com.yossibank.androidapptemplate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yossibank.androidapptemplate.core.LatestResult
-import com.yossibank.shared.PokemonListResult
+import com.yossibank.shared.PokemonListFailure
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,27 +36,24 @@ class PokemonListViewModel(
 
         latest.startIfIdle {
             mutableUiState.value = current.copy(isLoadingMore = true)
-
-            val next = nextPage()
-
-            // 追加取得が失敗しても、読み込めている分は残す。
-            next as? PokemonListUiState.Loaded ?: current
+            nextPage()
         }
     }
 
     private suspend fun nextPage(): PokemonListUiState = try {
-        when (val result = paging.loadNext()) {
-            is PokemonListResult.Loaded ->
-                if (result.pokemon.isEmpty()) {
-                    PokemonListUiState.Empty
-                } else {
-                    PokemonListUiState.Loaded(
-                        pokemon = result.pokemon,
-                        hasMore = result.hasMore,
-                    )
-                }
+        val result = paging.loadNext()
+        val failure = result.failure
 
-            is PokemonListResult.Failed -> result.toUiState()
+        when {
+            result.pokemon.isNotEmpty() ->
+                PokemonListUiState.Loaded(
+                    pokemon = result.pokemon,
+                    hasMore = result.hasMore,
+                )
+
+            failure != null -> failure.toUiState()
+
+            else -> PokemonListUiState.Empty
         }
     } catch (e: CancellationException) {
         throw e
@@ -68,13 +65,13 @@ class PokemonListViewModel(
     }
 }
 
-private fun PokemonListResult.Failed.toUiState(): PokemonListUiState.Failed = when (this) {
-    is PokemonListResult.Failed.Offline ->
+private fun PokemonListFailure.toUiState(): PokemonListUiState.Failed = when (this) {
+    is PokemonListFailure.Offline ->
         PokemonListUiState.Failed(R.string.error_offline, canRetry)
 
-    is PokemonListResult.Failed.Server ->
+    is PokemonListFailure.Server ->
         PokemonListUiState.Failed(R.string.error_server, canRetry, listOf(statusCode))
 
-    is PokemonListResult.Failed.Unexpected ->
+    is PokemonListFailure.Unexpected ->
         PokemonListUiState.Failed(R.string.error_unreadable, canRetry)
 }

@@ -1,7 +1,7 @@
 package com.yossibank.androidapptemplate
 
 import androidx.annotation.StringRes
-import com.yossibank.shared.generated.model.PokemonSummary
+import com.yossibank.shared.PokemonEntry
 
 sealed interface PokemonListUiState {
     data object Loading : PokemonListUiState
@@ -9,7 +9,7 @@ sealed interface PokemonListUiState {
     data object Empty : PokemonListUiState
 
     data class Loaded(
-        val pokemon: List<PokemonSummary>,
+        val pokemon: List<PokemonEntry>,
         val hasMore: Boolean,
         val isLoadingMore: Boolean = false,
     ) : PokemonListUiState
