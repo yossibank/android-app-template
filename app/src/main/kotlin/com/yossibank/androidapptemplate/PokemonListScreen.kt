@@ -50,6 +50,8 @@ import coil3.compose.AsyncImage
 import com.yossibank.androidapptemplate.core.standardContains
 import com.yossibank.shared.PokemonBaseStat
 import com.yossibank.shared.PokemonEntry
+import com.yossibank.shared.PokemonEntryDetail
+import com.yossibank.shared.PokemonFailure
 import com.yossibank.shared.PokemonPager
 import com.yossibank.shared.PokemonStatKind
 import com.yossibank.shared.PokemonTypeKind
@@ -227,6 +229,8 @@ private fun LoadedList(
 
 @Composable
 private fun PokemonRow(pokemon: PokemonEntry) {
+    val detail = pokemon.detail as? PokemonEntryDetail.Loaded
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -250,10 +254,12 @@ private fun PokemonRow(pokemon: PokemonEntry) {
                     fontWeight = FontWeight.SemiBold,
                 )
 
-                if (pokemon.types.isNotEmpty()) {
+                val types = detail?.types.orEmpty()
+
+                if (types.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        pokemon.types.forEach { TypeBadge(it) }
+                        types.forEach { TypeBadge(it) }
                     }
                 }
             }
@@ -265,9 +271,9 @@ private fun PokemonRow(pokemon: PokemonEntry) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
-                if (pokemon.baseStats.isNotEmpty()) {
+                if (detail != null && detail.baseStats.isNotEmpty()) {
                     Text(
-                        text = stringResource(R.string.pokemon_list_total, pokemon.totalBaseStat),
+                        text = stringResource(R.string.pokemon_list_total, detail.totalBaseStat),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -279,6 +285,8 @@ private fun PokemonRow(pokemon: PokemonEntry) {
 
 @Composable
 private fun Sprite(pokemon: PokemonEntry) {
+    val spriteUrl = (pokemon.detail as? PokemonEntryDetail.Loaded)?.spriteUrl
+
     Box(
         modifier = Modifier
             .size(56.dp)
@@ -286,9 +294,9 @@ private fun Sprite(pokemon: PokemonEntry) {
             .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center,
     ) {
-        if (pokemon.spriteUrl != null) {
+        if (spriteUrl != null) {
             AsyncImage(
-                model = pokemon.spriteUrl,
+                model = spriteUrl,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -405,17 +413,18 @@ private fun sample(
 ) = PokemonEntry(
     id = id,
     name = name,
-    hasDetail = true,
-    spriteUrl = null,
-    types = types,
-    baseStats = listOf(
-        PokemonStatKind.HP,
-        PokemonStatKind.ATTACK,
-        PokemonStatKind.DEFENSE,
-        PokemonStatKind.SPECIAL_ATTACK,
-        PokemonStatKind.SPECIAL_DEFENSE,
-        PokemonStatKind.SPEED,
-    ).zip(stats) { kind, value -> PokemonBaseStat(kind, value) },
+    detail = PokemonEntryDetail.Loaded(
+        spriteUrl = null,
+        types = types,
+        baseStats = listOf(
+            PokemonStatKind.HP,
+            PokemonStatKind.ATTACK,
+            PokemonStatKind.DEFENSE,
+            PokemonStatKind.SPECIAL_ATTACK,
+            PokemonStatKind.SPECIAL_DEFENSE,
+            PokemonStatKind.SPEED,
+        ).zip(stats) { kind, value -> PokemonBaseStat(kind, value) },
+    ),
 )
 
 private val SAMPLE = listOf(
@@ -469,10 +478,7 @@ private fun PokemonListDegradedPreview() {
                     PokemonEntry(
                         id = 132,
                         name = "ditto",
-                        hasDetail = false,
-                        spriteUrl = null,
-                        types = emptyList(),
-                        baseStats = emptyList(),
+                        detail = PokemonEntryDetail.Missing(PokemonFailure.Server(statusCode = 500)),
                     ),
                 ),
                 hasMore = false,
