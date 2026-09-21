@@ -3,6 +3,7 @@ package com.yossibank.androidapptemplate
 import androidx.lifecycle.ViewModelStore
 import com.yossibank.shared.PokemonBaseStat
 import com.yossibank.shared.PokemonEntry
+import com.yossibank.shared.PokemonEntryDetail
 import com.yossibank.shared.PokemonFailure
 import com.yossibank.shared.PokemonListResult
 import com.yossibank.shared.PokemonStatKind
@@ -57,10 +58,15 @@ private fun entries(
     PokemonEntry(
         id = index + 1,
         name = name,
-        hasDetail = hasDetail,
-        spriteUrl = "https://img.example/${index + 1}.png",
-        types = listOf(PokemonTypeKind.GRASS),
-        baseStats = listOf(PokemonBaseStat(PokemonStatKind.HP, 45)),
+        detail = if (hasDetail) {
+            PokemonEntryDetail.Loaded(
+                spriteUrl = "https://img.example/${index + 1}.png",
+                types = listOf(PokemonTypeKind.GRASS),
+                baseStats = listOf(PokemonBaseStat(PokemonStatKind.HP, 45)),
+            )
+        } else {
+            PokemonEntryDetail.Missing(PokemonFailure.Server(statusCode = 500))
+        },
     )
 }
 
