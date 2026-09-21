@@ -132,7 +132,12 @@ private fun PokemonList(
 
         is PokemonListUiState.Loaded ->
             Searchable(query = query, onQueryChange = onQueryChange, modifier = modifier) {
-                LoadedList(uiState = uiState, query = query, onLoadMore = onLoadMore)
+                LoadedList(
+                    uiState = uiState,
+                    query = query,
+                    onLoadMore = onLoadMore,
+                    onRetry = onRetry,
+                )
             }
 
         is PokemonListUiState.Failed ->
@@ -150,6 +155,7 @@ private fun LoadedList(
     uiState: PokemonListUiState.Loaded,
     query: String,
     onLoadMore: () -> Unit,
+    onRetry: () -> Unit,
 ) {
     val filtered = uiState.pokemon.filter { it.name.standardContains(query) }
 
@@ -163,7 +169,7 @@ private fun LoadedList(
 
     val listState = rememberLazyListState()
 
-    if (query.isEmpty() && uiState.hasMore) {
+    if (query.isEmpty() && uiState.hasMore && uiState.notice == null) {
         LaunchedEffect(listState, uiState.pokemon.size) {
             snapshotFlow {
                 listState.layoutInfo.visibleItemsInfo
@@ -184,8 +190,24 @@ private fun LoadedList(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp),
     ) {
+        if (uiState.incompleteCount > 0) {
+            item {
+                Banner(text = stringResource(R.string.pokemon_list_incomplete, uiState.incompleteCount))
+            }
+        }
+
         items(filtered, key = { it.id }) { pokemon ->
             PokemonRow(pokemon)
+        }
+
+        uiState.notice?.let { notice ->
+            item {
+                Banner(
+                    text = stringResource(notice.messageRes, *notice.formatArgs.toTypedArray()),
+                    color = MaterialTheme.colorScheme.error,
+                    onRetry = if (notice.canRetry) onLoadMore else onRetry,
+                )
+            }
         }
 
         if (uiState.isLoadingMore) {
@@ -294,6 +316,34 @@ private fun TypeBadge(type: PokemonTypeKind) {
 }
 
 @Composable
+private fun Banner(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    onRetry: (() -> Unit)? = null,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = color,
+            modifier = Modifier.weight(1f),
+        )
+
+        if (onRetry != null) {
+            TextButton(onClick = onRetry) {
+                Text(text = stringResource(R.string.action_reload))
+            }
+        }
+    }
+}
+
+@Composable
 private fun Searchable(
     query: String,
     onQueryChange: (String) -> Unit,
@@ -355,6 +405,7 @@ private fun sample(
 ) = PokemonEntry(
     id = id,
     name = name,
+    hasDetail = true,
     spriteUrl = null,
     types = types,
     baseStats = listOf(
@@ -418,6 +469,7 @@ private fun PokemonListDegradedPreview() {
                     PokemonEntry(
                         id = 132,
                         name = "ditto",
+                        hasDetail = false,
                         spriteUrl = null,
                         types = emptyList(),
                         baseStats = emptyList(),
