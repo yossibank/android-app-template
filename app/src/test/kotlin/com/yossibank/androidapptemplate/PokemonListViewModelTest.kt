@@ -3,7 +3,7 @@ package com.yossibank.androidapptemplate
 import androidx.lifecycle.ViewModelStore
 import com.yossibank.shared.PokemonBaseStat
 import com.yossibank.shared.PokemonEntry
-import com.yossibank.shared.PokemonListFailure
+import com.yossibank.shared.PokemonFailure
 import com.yossibank.shared.PokemonListResult
 import com.yossibank.shared.PokemonStatKind
 import com.yossibank.shared.PokemonTypeKind
@@ -74,7 +74,7 @@ private fun loaded(
 )
 
 private fun failed(
-    failure: PokemonListFailure,
+    failure: PokemonFailure,
     vararg names: String,
 ) = PokemonListResult.Failed(
     pokemon = entries(names),
@@ -148,7 +148,7 @@ class PokemonListViewModelTest {
     @Test
     fun `追加取得が失敗しても読み込めた分は残る`() = runTest(dispatcher) {
         val model = viewModel { index ->
-            if (index == 0) loaded("a", hasMore = true) else failed(PokemonListFailure.Offline, "a")
+            if (index == 0) loaded("a", hasMore = true) else failed(PokemonFailure.Offline, "a")
         }
         advanceUntilIdle()
 
@@ -161,7 +161,7 @@ class PokemonListViewModelTest {
     @Test
     fun `追加取得の失敗は知らせに出る`() = runTest(dispatcher) {
         val model = viewModel { index ->
-            if (index == 0) loaded("a", hasMore = true) else failed(PokemonListFailure.Offline, "a")
+            if (index == 0) loaded("a", hasMore = true) else failed(PokemonFailure.Offline, "a")
         }
         advanceUntilIdle()
 
@@ -196,7 +196,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `接続できないときは再試行できる失敗になる`() = runTest(dispatcher) {
-        val model = viewModel { failed(PokemonListFailure.Offline) }
+        val model = viewModel { failed(PokemonFailure.Offline) }
 
         advanceUntilIdle()
 
@@ -204,8 +204,19 @@ class PokemonListViewModelTest {
     }
 
     @Test
+    fun `応答が遅いときは接続断とは別の文言になる`() = runTest(dispatcher) {
+        val model = viewModel { failed(PokemonFailure.Timeout) }
+
+        advanceUntilIdle()
+
+        val uiState = model.uiState.value as PokemonListUiState.Failed
+        assertEquals(R.string.error_timeout, uiState.messageRes)
+        assertTrue(uiState.canRetry)
+    }
+
+    @Test
     fun `サーバーエラーは状態コードを文言に含める`() = runTest(dispatcher) {
-        val model = viewModel { failed(PokemonListFailure.Server(503)) }
+        val model = viewModel { failed(PokemonFailure.Server(503)) }
 
         advanceUntilIdle()
 
@@ -216,7 +227,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `解釈できない応答は再試行できない失敗になる`() = runTest(dispatcher) {
-        val model = viewModel { failed(PokemonListFailure.Unexpected) }
+        val model = viewModel { failed(PokemonFailure.Unexpected) }
 
         advanceUntilIdle()
 
@@ -255,7 +266,7 @@ class PokemonListViewModelTest {
                     delay(1_000)
                     loaded("古い")
                 } catch (e: Exception) {
-                    failed(PokemonListFailure.Unexpected)
+                    failed(PokemonFailure.Unexpected)
                 }
             } else {
                 loaded("新しい")

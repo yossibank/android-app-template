@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yossibank.androidapptemplate.core.LatestResult
 import com.yossibank.shared.PokemonEntry
-import com.yossibank.shared.PokemonListFailure
+import com.yossibank.shared.PokemonFailure
 import com.yossibank.shared.PokemonListResult
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -84,17 +84,20 @@ class PokemonListViewModel(
     }
 }
 
-private fun PokemonListFailure.toFailed(): PokemonListUiState.Failed = when (this) {
-    is PokemonListFailure.Offline ->
+private fun PokemonFailure.toFailed(): PokemonListUiState.Failed = when (this) {
+    is PokemonFailure.Offline ->
         PokemonListUiState.Failed(R.string.error_offline, canRetry)
 
-    is PokemonListFailure.Server ->
+    is PokemonFailure.Timeout ->
+        PokemonListUiState.Failed(R.string.error_timeout, canRetry)
+
+    is PokemonFailure.Server ->
         PokemonListUiState.Failed(R.string.error_server, canRetry, listOf(statusCode))
 
-    is PokemonListFailure.Unexpected ->
+    is PokemonFailure.Unexpected ->
         PokemonListUiState.Failed(R.string.error_unreadable, canRetry)
 }
 
-private fun PokemonListFailure.toNotice(): PokemonListUiState.Notice = toFailed().let {
+private fun PokemonFailure.toNotice(): PokemonListUiState.Notice = toFailed().let {
     PokemonListUiState.Notice(it.messageRes, it.canRetry, it.formatArgs)
 }
