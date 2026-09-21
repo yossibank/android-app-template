@@ -151,9 +151,7 @@ private fun LoadedList(
     query: String,
     onLoadMore: () -> Unit,
 ) {
-    val filtered = uiState.pokemon.filter {
-        it.displayName.standardContains(query) || it.name.standardContains(query)
-    }
+    val filtered = uiState.pokemon.filter { it.name.standardContains(query) }
 
     if (filtered.isEmpty()) {
         Message(
@@ -165,7 +163,6 @@ private fun LoadedList(
 
     val listState = rememberLazyListState()
 
-    // 絞り込み中は続きを読まない。手元にある分から選んでいる最中なので。
     if (query.isEmpty() && uiState.hasMore) {
         LaunchedEffect(listState, uiState.pokemon.size) {
             snapshotFlow {
@@ -226,7 +223,7 @@ private fun PokemonRow(pokemon: PokemonEntry) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = pokemon.displayName,
+                    text = pokemon.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -275,7 +272,7 @@ private fun Sprite(pokemon: PokemonEntry) {
             )
         } else {
             Text(
-                text = pokemon.displayName.take(1),
+                text = pokemon.name.take(1),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -352,14 +349,12 @@ private fun Message(
 
 private fun sample(
     id: Int,
-    japanese: String,
     name: String,
     types: List<PokemonTypeKind>,
     stats: List<Int>,
 ) = PokemonEntry(
     id = id,
     name = name,
-    japaneseName = japanese,
     spriteUrl = null,
     types = types,
     baseStats = listOf(
@@ -373,11 +368,11 @@ private fun sample(
 )
 
 private val SAMPLE = listOf(
-    sample(1, "フシギダネ", "bulbasaur", listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON), listOf(45, 49, 49, 65, 65, 45)),
-    sample(4, "ヒトカゲ", "charmander", listOf(PokemonTypeKind.FIRE), listOf(39, 52, 43, 60, 50, 65)),
-    sample(7, "ゼニガメ", "squirtle", listOf(PokemonTypeKind.WATER), listOf(44, 48, 65, 50, 64, 43)),
-    sample(10, "キャタピー", "caterpie", listOf(PokemonTypeKind.BUG), listOf(45, 30, 35, 20, 20, 45)),
-    sample(25, "ピカチュウ", "pikachu", listOf(PokemonTypeKind.ELECTRIC), listOf(35, 55, 40, 50, 50, 90)),
+    sample(1, "bulbasaur", listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON), listOf(45, 49, 49, 65, 65, 45)),
+    sample(4, "charmander", listOf(PokemonTypeKind.FIRE), listOf(39, 52, 43, 60, 50, 65)),
+    sample(7, "squirtle", listOf(PokemonTypeKind.WATER), listOf(44, 48, 65, 50, 64, 43)),
+    sample(10, "caterpie", listOf(PokemonTypeKind.BUG), listOf(45, 30, 35, 20, 20, 45)),
+    sample(25, "pikachu", listOf(PokemonTypeKind.ELECTRIC), listOf(35, 55, 40, 50, 50, 90)),
 )
 
 @Preview(name = "一覧", showBackground = true, heightDp = 900)
@@ -423,7 +418,6 @@ private fun PokemonListDegradedPreview() {
                     PokemonEntry(
                         id = 132,
                         name = "ditto",
-                        japaneseName = null,
                         spriteUrl = null,
                         types = emptyList(),
                         baseStats = emptyList(),

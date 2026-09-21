@@ -46,7 +46,6 @@ private fun entries(names: Array<out String>) = names.mapIndexed { index, name -
     PokemonEntry(
         id = index + 1,
         name = name,
-        japaneseName = null,
         spriteUrl = "https://img.example/${index + 1}.png",
         types = listOf(PokemonTypeKind.GRASS),
         baseStats = listOf(PokemonBaseStat(PokemonStatKind.HP, 45)),
@@ -178,7 +177,6 @@ class PokemonListViewModelTest {
 
     @Test
     fun `再取得すると進行中の結果は捨てられる`() = runTest(dispatcher) {
-        // reset() で index が巻き戻るので、通し番号で分岐する。
         var call = 0
         val model = viewModel {
             call += 1
