@@ -1,7 +1,5 @@
 GRADLE := ./gradlew
 
-# CI は増分を当てにしない。UP-TO-DATE / FROM-CACHE で素通りすると、
-# 警告もテスト結果も出ないまま green になる。
 ifdef CI
 GRADLE_FLAGS := --rerun-tasks
 endif

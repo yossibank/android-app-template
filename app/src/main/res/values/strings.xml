@@ -9,6 +9,7 @@
     <string name="pokemon_list_no_match_title">「%1$s」に一致するポケモンがいません</string>
     <string name="pokemon_list_no_match_description">綴りを確認するか、別の語で試してください</string>
     <string name="pokemon_list_number">#%1$03d</string>
+    <string name="pokemon_list_incomplete">%1$d 件の詳細を取得できませんでした</string>
     <string name="pokemon_list_total">合計 %1$d</string>
 
     <string name="action_reload">再取得</string>

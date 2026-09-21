@@ -3,7 +3,9 @@ package com.yossibank.androidapptemplate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yossibank.androidapptemplate.core.LatestResult
+import com.yossibank.shared.PokemonEntry
 import com.yossibank.shared.PokemonListFailure
+import com.yossibank.shared.PokemonListResult
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,25 +37,26 @@ class PokemonListViewModel(
         if (current !is PokemonListUiState.Loaded || !current.hasMore) return
 
         latest.startIfIdle {
-            mutableUiState.value = current.copy(isLoadingMore = true)
+            mutableUiState.value = current.copy(isLoadingMore = true, notice = null)
             nextPage()
         }
     }
 
+    override fun onCleared() {
+        paging.close()
+    }
+
     private suspend fun nextPage(): PokemonListUiState = try {
-        val result = paging.loadNext()
-        val failure = result.failure
+        when (val result = paging.loadNext()) {
+            is PokemonListResult.Loaded ->
+                loaded(result.pokemon, result.hasMore, result.incompleteCount, notice = null)
 
-        when {
-            result.pokemon.isNotEmpty() ->
-                PokemonListUiState.Loaded(
-                    pokemon = result.pokemon,
-                    hasMore = result.hasMore,
-                )
-
-            failure != null -> failure.toUiState()
-
-            else -> PokemonListUiState.Empty
+            is PokemonListResult.Failed ->
+                if (result.pokemon.isEmpty()) {
+                    result.failure.toFailed()
+                } else {
+                    loaded(result.pokemon, result.hasMore, result.incompleteCount, result.failure.toNotice())
+                }
         }
     } catch (e: CancellationException) {
         throw e
@@ -63,9 +66,25 @@ class PokemonListViewModel(
             canRetry = true,
         )
     }
+
+    private fun loaded(
+        pokemon: List<PokemonEntry>,
+        hasMore: Boolean,
+        incompleteCount: Int,
+        notice: PokemonListUiState.Notice?,
+    ): PokemonListUiState = if (pokemon.isEmpty()) {
+        PokemonListUiState.Empty
+    } else {
+        PokemonListUiState.Loaded(
+            pokemon = pokemon,
+            hasMore = hasMore,
+            incompleteCount = incompleteCount,
+            notice = notice,
+        )
+    }
 }
 
-private fun PokemonListFailure.toUiState(): PokemonListUiState.Failed = when (this) {
+private fun PokemonListFailure.toFailed(): PokemonListUiState.Failed = when (this) {
     is PokemonListFailure.Offline ->
         PokemonListUiState.Failed(R.string.error_offline, canRetry)
 
@@ -74,4 +93,8 @@ private fun PokemonListFailure.toUiState(): PokemonListUiState.Failed = when (th
 
     is PokemonListFailure.Unexpected ->
         PokemonListUiState.Failed(R.string.error_unreadable, canRetry)
+}
+
+private fun PokemonListFailure.toNotice(): PokemonListUiState.Notice = toFailed().let {
+    PokemonListUiState.Notice(it.messageRes, it.canRetry, it.formatArgs)
 }

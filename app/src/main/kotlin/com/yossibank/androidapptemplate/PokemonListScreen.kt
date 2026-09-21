@@ -132,7 +132,12 @@ private fun PokemonList(
 
         is PokemonListUiState.Loaded ->
             Searchable(query = query, onQueryChange = onQueryChange, modifier = modifier) {
-                LoadedList(uiState = uiState, query = query, onLoadMore = onLoadMore)
+                LoadedList(
+                    uiState = uiState,
+                    query = query,
+                    onLoadMore = onLoadMore,
+                    onRetry = onRetry,
+                )
             }
 
         is PokemonListUiState.Failed ->
@@ -150,10 +155,9 @@ private fun LoadedList(
     uiState: PokemonListUiState.Loaded,
     query: String,
     onLoadMore: () -> Unit,
+    onRetry: () -> Unit,
 ) {
-    val filtered = uiState.pokemon.filter {
-        it.displayName.standardContains(query) || it.name.standardContains(query)
-    }
+    val filtered = uiState.pokemon.filter { it.name.standardContains(query) }
 
     if (filtered.isEmpty()) {
         Message(
@@ -165,8 +169,7 @@ private fun LoadedList(
 
     val listState = rememberLazyListState()
 
-    // 絞り込み中は続きを読まない。手元にある分から選んでいる最中なので。
-    if (query.isEmpty() && uiState.hasMore) {
+    if (query.isEmpty() && uiState.hasMore && uiState.notice == null) {
         LaunchedEffect(listState, uiState.pokemon.size) {
             snapshotFlow {
                 listState.layoutInfo.visibleItemsInfo
@@ -187,8 +190,24 @@ private fun LoadedList(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp),
     ) {
+        if (uiState.incompleteCount > 0) {
+            item {
+                Banner(text = stringResource(R.string.pokemon_list_incomplete, uiState.incompleteCount))
+            }
+        }
+
         items(filtered, key = { it.id }) { pokemon ->
             PokemonRow(pokemon)
+        }
+
+        uiState.notice?.let { notice ->
+            item {
+                Banner(
+                    text = stringResource(notice.messageRes, *notice.formatArgs.toTypedArray()),
+                    color = MaterialTheme.colorScheme.error,
+                    onRetry = if (notice.canRetry) onLoadMore else onRetry,
+                )
+            }
         }
 
         if (uiState.isLoadingMore) {
@@ -226,7 +245,7 @@ private fun PokemonRow(pokemon: PokemonEntry) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = pokemon.displayName,
+                    text = pokemon.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -275,7 +294,7 @@ private fun Sprite(pokemon: PokemonEntry) {
             )
         } else {
             Text(
-                text = pokemon.displayName.take(1),
+                text = pokemon.name.take(1),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -294,6 +313,34 @@ private fun TypeBadge(type: PokemonTypeKind) {
             .background(type.badgeColor)
             .padding(horizontal = 10.dp, vertical = 3.dp),
     )
+}
+
+@Composable
+private fun Banner(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    onRetry: (() -> Unit)? = null,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = color,
+            modifier = Modifier.weight(1f),
+        )
+
+        if (onRetry != null) {
+            TextButton(onClick = onRetry) {
+                Text(text = stringResource(R.string.action_reload))
+            }
+        }
+    }
 }
 
 @Composable
@@ -352,14 +399,13 @@ private fun Message(
 
 private fun sample(
     id: Int,
-    japanese: String,
     name: String,
     types: List<PokemonTypeKind>,
     stats: List<Int>,
 ) = PokemonEntry(
     id = id,
     name = name,
-    japaneseName = japanese,
+    hasDetail = true,
     spriteUrl = null,
     types = types,
     baseStats = listOf(
@@ -373,11 +419,11 @@ private fun sample(
 )
 
 private val SAMPLE = listOf(
-    sample(1, "フシギダネ", "bulbasaur", listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON), listOf(45, 49, 49, 65, 65, 45)),
-    sample(4, "ヒトカゲ", "charmander", listOf(PokemonTypeKind.FIRE), listOf(39, 52, 43, 60, 50, 65)),
-    sample(7, "ゼニガメ", "squirtle", listOf(PokemonTypeKind.WATER), listOf(44, 48, 65, 50, 64, 43)),
-    sample(10, "キャタピー", "caterpie", listOf(PokemonTypeKind.BUG), listOf(45, 30, 35, 20, 20, 45)),
-    sample(25, "ピカチュウ", "pikachu", listOf(PokemonTypeKind.ELECTRIC), listOf(35, 55, 40, 50, 50, 90)),
+    sample(1, "bulbasaur", listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON), listOf(45, 49, 49, 65, 65, 45)),
+    sample(4, "charmander", listOf(PokemonTypeKind.FIRE), listOf(39, 52, 43, 60, 50, 65)),
+    sample(7, "squirtle", listOf(PokemonTypeKind.WATER), listOf(44, 48, 65, 50, 64, 43)),
+    sample(10, "caterpie", listOf(PokemonTypeKind.BUG), listOf(45, 30, 35, 20, 20, 45)),
+    sample(25, "pikachu", listOf(PokemonTypeKind.ELECTRIC), listOf(35, 55, 40, 50, 50, 90)),
 )
 
 @Preview(name = "一覧", showBackground = true, heightDp = 900)
@@ -423,7 +469,7 @@ private fun PokemonListDegradedPreview() {
                     PokemonEntry(
                         id = 132,
                         name = "ditto",
-                        japaneseName = null,
+                        hasDetail = false,
                         spriteUrl = null,
                         types = emptyList(),
                         baseStats = emptyList(),

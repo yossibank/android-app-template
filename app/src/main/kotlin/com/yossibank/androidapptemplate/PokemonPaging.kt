@@ -7,6 +7,8 @@ interface PokemonPaging {
     suspend fun loadNext(): PokemonListResult
 
     suspend fun reset()
+
+    fun close()
 }
 
 class SharedPokemonPaging(
@@ -15,4 +17,6 @@ class SharedPokemonPaging(
     override suspend fun loadNext(): PokemonListResult = pager.loadNext()
 
     override suspend fun reset() = pager.reset()
+
+    override fun close() = pager.close()
 }

@@ -1,5 +1,6 @@
 package com.yossibank.androidapptemplate
 
+import androidx.lifecycle.ViewModelStore
 import com.yossibank.shared.PokemonBaseStat
 import com.yossibank.shared.PokemonEntry
 import com.yossibank.shared.PokemonListFailure
@@ -40,13 +41,23 @@ private class StubPaging(
     override suspend fun reset() {
         index = 0
     }
+
+    override fun close() {
+        closed = true
+    }
+
+    var closed = false
+        private set
 }
 
-private fun entries(names: Array<out String>) = names.mapIndexed { index, name ->
+private fun entries(
+    names: Array<out String>,
+    hasDetail: Boolean = true,
+) = names.mapIndexed { index, name ->
     PokemonEntry(
         id = index + 1,
         name = name,
-        japaneseName = null,
+        hasDetail = hasDetail,
         spriteUrl = "https://img.example/${index + 1}.png",
         types = listOf(PokemonTypeKind.GRASS),
         baseStats = listOf(PokemonBaseStat(PokemonStatKind.HP, 45)),
@@ -56,16 +67,16 @@ private fun entries(names: Array<out String>) = names.mapIndexed { index, name -
 private fun loaded(
     vararg names: String,
     hasMore: Boolean = false,
-) = PokemonListResult(
-    pokemon = entries(names),
+    hasDetail: Boolean = true,
+) = PokemonListResult.Loaded(
+    pokemon = entries(names, hasDetail),
     hasMore = hasMore,
-    failure = null,
 )
 
 private fun failed(
     failure: PokemonListFailure,
     vararg names: String,
-) = PokemonListResult(
+) = PokemonListResult.Failed(
     pokemon = entries(names),
     hasMore = true,
     failure = failure,
@@ -100,7 +111,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `結果が空なら Empty になる`() = runTest(dispatcher) {
-        val model = viewModel { PokemonListResult(emptyList(), hasMore = false, failure = null) }
+        val model = viewModel { PokemonListResult.Loaded(emptyList(), hasMore = false) }
 
         advanceUntilIdle()
 
@@ -148,6 +159,42 @@ class PokemonListViewModelTest {
     }
 
     @Test
+    fun `追加取得の失敗は知らせに出る`() = runTest(dispatcher) {
+        val model = viewModel { index ->
+            if (index == 0) loaded("a", hasMore = true) else failed(PokemonListFailure.Offline, "a")
+        }
+        advanceUntilIdle()
+
+        model.loadMore()
+        advanceUntilIdle()
+
+        val uiState = model.uiState.value as PokemonListUiState.Loaded
+        assertEquals(R.string.error_offline, uiState.notice?.messageRes)
+    }
+
+    @Test
+    fun `詳細を取れなかった件数が出る`() = runTest(dispatcher) {
+        val model = viewModel { loaded("a", "b", hasDetail = false) }
+
+        advanceUntilIdle()
+
+        assertEquals(2, (model.uiState.value as PokemonListUiState.Loaded).incompleteCount)
+    }
+
+    @Test
+    fun `畳まれたら共通コアを閉じる`() = runTest(dispatcher) {
+        val stub = StubPaging { loaded("a") }
+        val model = PokemonListViewModel(stub)
+        advanceUntilIdle()
+
+        ViewModelStore()
+            .apply { put("pokemon", model) }
+            .clear()
+
+        assertTrue(stub.closed)
+    }
+
+    @Test
     fun `接続できないときは再試行できる失敗になる`() = runTest(dispatcher) {
         val model = viewModel { failed(PokemonListFailure.Offline) }
 
@@ -178,7 +225,6 @@ class PokemonListViewModelTest {
 
     @Test
     fun `再取得すると進行中の結果は捨てられる`() = runTest(dispatcher) {
-        // reset() で index が巻き戻るので、通し番号で分岐する。
         var call = 0
         val model = viewModel {
             call += 1
