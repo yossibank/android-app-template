@@ -70,6 +70,7 @@ private fun entries(
         detail = if (hasDetail) {
             PokemonEntryDetail.Loaded(
                 spriteUrl = "https://img.example/${index + 1}.png",
+                artworkUrl = "https://img.example/artwork/${index + 1}.png",
                 types = listOf(PokemonTypeKind.GRASS),
                 baseStats = listOf(PokemonBaseStat(PokemonStatKind.HP, 45)),
             )
@@ -332,6 +333,30 @@ class PokemonListViewModelTest {
         assertEquals(1, stub.repairCalls)
         assertEquals("詳細の取り直しでページを読み直している", 1, stub.calls)
         assertEquals(0, (model.uiState.value as PokemonListUiState.Loaded).incompleteCount)
+    }
+
+    @Test
+    fun `プルして再取得しても一覧は消えない`() = runTest(dispatcher) {
+        var call = 0
+        val model = viewModel {
+            call += 1
+            if (call == 1) loaded("a", hasMore = true) else loaded("b", hasMore = true)
+        }
+        advanceUntilIdle()
+
+        val seen = mutableListOf<PokemonListUiState>()
+        val collector = launch(Dispatchers.Main) { model.uiState.collect { seen += it } }
+
+        model.refresh()
+        advanceUntilIdle()
+        collector.cancel()
+
+        assertFalse(
+            "再取得の途中で一覧が Loading に落ちている: $seen",
+            seen.any { it is PokemonListUiState.Loading },
+        )
+        assertEquals(listOf("b"), names(model.uiState.value))
+        assertFalse((model.uiState.value as PokemonListUiState.Loaded).isRefreshing)
     }
 
     @Test

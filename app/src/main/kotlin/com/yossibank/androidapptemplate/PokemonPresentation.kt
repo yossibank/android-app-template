@@ -52,6 +52,18 @@ val PokemonTypeKind.badgeColor: Color
         PokemonTypeKind.UNKNOWN -> Color(0xFF68A090)
     }
 
+@get:StringRes
+val PokemonStatKind.labelRes: Int
+    get() = when (this) {
+        PokemonStatKind.HP -> R.string.stat_hp
+        PokemonStatKind.ATTACK -> R.string.stat_attack
+        PokemonStatKind.DEFENSE -> R.string.stat_defense
+        PokemonStatKind.SPECIAL_ATTACK -> R.string.stat_special_attack
+        PokemonStatKind.SPECIAL_DEFENSE -> R.string.stat_special_defense
+        PokemonStatKind.SPEED -> R.string.stat_speed
+        PokemonStatKind.OTHER -> R.string.stat_other
+    }
+
 val PokemonStatKind.barColor: Color
     get() = when (this) {
         PokemonStatKind.HP -> Color(0xFF6ABE5A)

@@ -31,6 +31,21 @@ class PokemonListViewModel(
         }
     }
 
+    fun refresh() {
+        val current = mutableUiState.value
+
+        if (current !is PokemonListUiState.Loaded) {
+            reload()
+            return
+        }
+
+        latest.restart {
+            mutableUiState.value = current.copy(isRefreshing = true, notice = null)
+            paging.reset()
+            nextPage()
+        }
+    }
+
     fun loadMore() {
         val current = mutableUiState.value
 
@@ -83,7 +98,7 @@ class PokemonListViewModel(
     }
 
     private fun settled(uiState: PokemonListUiState): PokemonListUiState = if (uiState is PokemonListUiState.Loaded) {
-        uiState.copy(isLoadingMore = false, isRepairingDetails = false)
+        uiState.copy(isLoadingMore = false, isRepairingDetails = false, isRefreshing = false)
     } else {
         uiState
     }

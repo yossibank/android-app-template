@@ -13,6 +13,7 @@ sealed interface PokemonListUiState {
         val hasMore: Boolean,
         val isLoadingMore: Boolean = false,
         val isRepairingDetails: Boolean = false,
+        val isRefreshing: Boolean = false,
         val incompleteCount: Int = 0,
         val notice: Notice? = null,
     ) : PokemonListUiState
