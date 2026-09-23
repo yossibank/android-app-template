@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,11 +40,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
@@ -55,6 +58,8 @@ import com.yossibank.shared.PokemonFailure
 import com.yossibank.shared.PokemonPager
 import com.yossibank.shared.PokemonStatKind
 import com.yossibank.shared.PokemonTypeKind
+
+private const val MAX_TOTAL_BASE_STAT = 720f
 
 @Composable
 fun PokemonListScreen(
@@ -69,6 +74,7 @@ fun PokemonListScreen(
         query = query,
         onQueryChange = { query = it },
         onRetry = viewModel::reload,
+        onRetryDetails = viewModel::retryMissingDetails,
         onLoadMore = viewModel::loadMore,
         modifier = modifier,
     )
@@ -81,6 +87,7 @@ private fun PokemonListScaffold(
     query: String,
     onQueryChange: (String) -> Unit,
     onRetry: () -> Unit,
+    onRetryDetails: () -> Unit,
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -102,6 +109,7 @@ private fun PokemonListScaffold(
             query = query,
             onQueryChange = onQueryChange,
             onRetry = onRetry,
+            onRetryDetails = onRetryDetails,
             onLoadMore = onLoadMore,
             modifier = Modifier.padding(innerPadding),
         )
@@ -114,6 +122,7 @@ private fun PokemonList(
     query: String,
     onQueryChange: (String) -> Unit,
     onRetry: () -> Unit,
+    onRetryDetails: () -> Unit,
     onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -139,6 +148,7 @@ private fun PokemonList(
                     query = query,
                     onLoadMore = onLoadMore,
                     onRetry = onRetry,
+                    onRetryDetails = onRetryDetails,
                 )
             }
 
@@ -158,6 +168,7 @@ private fun LoadedList(
     query: String,
     onLoadMore: () -> Unit,
     onRetry: () -> Unit,
+    onRetryDetails: () -> Unit,
 ) {
     val filtered = uiState.pokemon.filter { it.name.standardContains(query) }
 
@@ -194,7 +205,12 @@ private fun LoadedList(
     ) {
         if (uiState.incompleteCount > 0) {
             item {
-                Banner(text = stringResource(R.string.pokemon_list_incomplete, uiState.incompleteCount))
+                Banner(
+                    text = stringResource(R.string.pokemon_list_incomplete, uiState.incompleteCount),
+                    busy = uiState.isRepairingDetails,
+                    actionRes = R.string.action_retry_details,
+                    onRetry = onRetryDetails,
+                )
             }
         }
 
@@ -230,80 +246,155 @@ private fun LoadedList(
 @Composable
 private fun PokemonRow(pokemon: PokemonEntry) {
     val detail = pokemon.detail as? PokemonEntryDetail.Loaded
+    val accent = detail?.types?.firstOrNull()?.badgeColor ?: MaterialTheme.colorScheme.outline
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 5.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
-        Row(
-            modifier = Modifier.padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            accent.copy(alpha = 0.22f),
+                            accent.copy(alpha = 0.06f),
+                            Color.Transparent,
+                        ),
+                    ),
+                ).padding(12.dp),
         ) {
-            Sprite(pokemon)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Sprite(pokemon = pokemon, accent = accent)
 
-            Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(14.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = pokemon.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.pokemon_list_number, pokemon.id),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
 
-                val types = detail?.types.orEmpty()
+                    Text(
+                        text = pokemon.name.replaceFirstChar { it.uppercase() },
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
 
-                if (types.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        types.forEach { TypeBadge(it) }
+                    val types = detail?.types.orEmpty()
+
+                    if (types.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(7.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            types.forEach { TypeBadge(it) }
+                        }
                     }
+                }
+
+                if (detail != null && detail.baseStats.isNotEmpty()) {
+                    Total(total = detail.totalBaseStat, accent = accent)
                 }
             }
 
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = stringResource(R.string.pokemon_list_number, pokemon.id),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                if (detail != null && detail.baseStats.isNotEmpty()) {
-                    Text(
-                        text = stringResource(R.string.pokemon_list_total, detail.totalBaseStat),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
+            if (detail != null && detail.baseStats.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                StatBar(stats = detail.baseStats, total = detail.totalBaseStat)
             }
         }
     }
 }
 
 @Composable
-private fun Sprite(pokemon: PokemonEntry) {
+private fun Total(
+    total: Int,
+    accent: Color,
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = stringResource(R.string.pokemon_list_total, total),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = accent,
+        )
+
+        Text(
+            text = stringResource(R.string.pokemon_list_total_caption),
+            style = MaterialTheme.typography.labelSmall,
+            fontSize = 10.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun StatBar(
+    stats: List<PokemonBaseStat>,
+    total: Int,
+) {
+    val fraction = (total / MAX_TOTAL_BASE_STAT).coerceIn(0.04f, 1f)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(7.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(fraction)
+                .fillMaxHeight()
+                .clip(CircleShape),
+        ) {
+            stats.forEach { stat ->
+                Box(
+                    modifier = Modifier
+                        .weight(stat.value.coerceAtLeast(1).toFloat())
+                        .fillMaxHeight()
+                        .background(stat.kind.barColor),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun Sprite(
+    pokemon: PokemonEntry,
+    accent: Color,
+) {
     val spriteUrl = (pokemon.detail as? PokemonEntryDetail.Loaded)?.spriteUrl
 
     Box(
         modifier = Modifier
-            .size(56.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+            .size(66.dp)
+            .clip(CircleShape)
+            .background(
+                Brush.radialGradient(
+                    listOf(accent.copy(alpha = 0.38f), accent.copy(alpha = 0.10f)),
+                ),
+            ),
         contentAlignment = Alignment.Center,
     ) {
         if (spriteUrl != null) {
             AsyncImage(
                 model = spriteUrl,
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.size(58.dp),
             )
         } else {
             Text(
-                text = pokemon.name.take(1),
-                style = MaterialTheme.typography.titleMedium,
+                text = pokemon.name.take(1).uppercase(),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -315,6 +406,7 @@ private fun TypeBadge(type: PokemonTypeKind) {
     Text(
         text = stringResource(type.labelRes),
         style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.SemiBold,
         color = Color.White,
         modifier = Modifier
             .clip(CircleShape)
@@ -328,6 +420,8 @@ private fun Banner(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    busy: Boolean = false,
+    actionRes: Int = R.string.action_reload,
     onRetry: (() -> Unit)? = null,
 ) {
     Row(
@@ -343,9 +437,11 @@ private fun Banner(
             modifier = Modifier.weight(1f),
         )
 
-        if (onRetry != null) {
+        if (busy) {
+            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+        } else if (onRetry != null) {
             TextButton(onClick = onRetry) {
-                Text(text = stringResource(R.string.action_reload))
+                Text(text = stringResource(actionRes))
             }
         }
     }
@@ -433,6 +529,7 @@ private val SAMPLE = listOf(
     sample(7, "squirtle", listOf(PokemonTypeKind.WATER), listOf(44, 48, 65, 50, 64, 43)),
     sample(10, "caterpie", listOf(PokemonTypeKind.BUG), listOf(45, 30, 35, 20, 20, 45)),
     sample(25, "pikachu", listOf(PokemonTypeKind.ELECTRIC), listOf(35, 55, 40, 50, 50, 90)),
+    sample(149, "dragonite", listOf(PokemonTypeKind.DRAGON, PokemonTypeKind.FLYING), listOf(91, 134, 95, 100, 100, 80)),
 )
 
 @Preview(name = "一覧", showBackground = true, heightDp = 900)
@@ -444,6 +541,7 @@ private fun PokemonListLoadedPreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onRetryDetails = {},
             onLoadMore = {},
         )
     }
@@ -463,6 +561,7 @@ private fun PokemonListLoadedDarkPreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onRetryDetails = {},
             onLoadMore = {},
         )
     }
@@ -480,12 +579,40 @@ private fun PokemonListDegradedPreview() {
                         name = "ditto",
                         detail = PokemonEntryDetail.Missing(PokemonFailure.Server(statusCode = 500)),
                     ),
-                ),
+                ) + SAMPLE,
                 hasMore = false,
+                incompleteCount = 1,
             ),
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onRetryDetails = {},
+            onLoadMore = {},
+        )
+    }
+}
+
+@Preview(name = "詳細を取り直している", showBackground = true)
+@Composable
+private fun PokemonListRepairingPreview() {
+    AppTheme {
+        PokemonListScaffold(
+            uiState = PokemonListUiState.Loaded(
+                listOf(
+                    PokemonEntry(
+                        id = 132,
+                        name = "ditto",
+                        detail = PokemonEntryDetail.Missing(PokemonFailure.Server(statusCode = 500)),
+                    ),
+                ) + SAMPLE,
+                hasMore = false,
+                isRepairingDetails = true,
+                incompleteCount = 1,
+            ),
+            query = "",
+            onQueryChange = {},
+            onRetry = {},
+            onRetryDetails = {},
             onLoadMore = {},
         )
     }
@@ -500,6 +627,7 @@ private fun PokemonListLoadingMorePreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onRetryDetails = {},
             onLoadMore = {},
         )
     }
@@ -514,6 +642,7 @@ private fun PokemonListNoMatchPreview() {
             query = "zzzz",
             onQueryChange = {},
             onRetry = {},
+            onRetryDetails = {},
             onLoadMore = {},
         )
     }
@@ -528,6 +657,7 @@ private fun PokemonListEmptyPreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onRetryDetails = {},
             onLoadMore = {},
         )
     }
@@ -542,6 +672,7 @@ private fun PokemonListFailedPreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onRetryDetails = {},
             onLoadMore = {},
         )
     }
@@ -556,6 +687,7 @@ private fun PokemonListUnrecoverablePreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onRetryDetails = {},
             onLoadMore = {},
         )
     }
@@ -570,6 +702,7 @@ private fun PokemonListLoadingPreview() {
             query = "",
             onQueryChange = {},
             onRetry = {},
+            onRetryDetails = {},
             onLoadMore = {},
         )
     }

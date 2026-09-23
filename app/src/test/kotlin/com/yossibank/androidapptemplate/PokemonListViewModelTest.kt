@@ -28,8 +28,12 @@ import org.junit.Test
 
 private class StubPaging(
     private val page: suspend (Int) -> PokemonListResult,
+    private val repair: suspend () -> PokemonListResult = { PokemonListResult.Loaded(emptyList(), hasMore = false) },
 ) : PokemonPaging {
     var calls = 0
+        private set
+
+    var repairCalls = 0
         private set
 
     private var index = 0
@@ -37,6 +41,11 @@ private class StubPaging(
     override suspend fun loadNext(): PokemonListResult {
         calls += 1
         return page(index++)
+    }
+
+    override suspend fun retryMissingDetails(): PokemonListResult {
+        repairCalls += 1
+        return repair()
     }
 
     override suspend fun reset() {
@@ -79,14 +88,16 @@ private fun loaded(
     hasMore = hasMore,
 )
 
-private fun failed(
+private fun degraded(
     failure: PokemonFailure,
     vararg names: String,
-) = PokemonListResult.Failed(
+) = PokemonListResult.Degraded(
     pokemon = entries(names),
     hasMore = true,
     failure = failure,
 )
+
+private fun failed(failure: PokemonFailure) = PokemonListResult.Failed(failure = failure)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PokemonListViewModelTest {
@@ -140,7 +151,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `終端では続きを読まない`() = runTest(dispatcher) {
-        val stub = StubPaging { loaded("a", hasMore = false) }
+        val stub = StubPaging(page = { loaded("a", hasMore = false) })
         val model = PokemonListViewModel(stub)
         advanceUntilIdle()
 
@@ -154,7 +165,7 @@ class PokemonListViewModelTest {
     @Test
     fun `追加取得が失敗しても読み込めた分は残る`() = runTest(dispatcher) {
         val model = viewModel { index ->
-            if (index == 0) loaded("a", hasMore = true) else failed(PokemonFailure.Offline, "a")
+            if (index == 0) loaded("a", hasMore = true) else degraded(PokemonFailure.Offline, "a")
         }
         advanceUntilIdle()
 
@@ -167,7 +178,7 @@ class PokemonListViewModelTest {
     @Test
     fun `追加取得の失敗は知らせに出る`() = runTest(dispatcher) {
         val model = viewModel { index ->
-            if (index == 0) loaded("a", hasMore = true) else failed(PokemonFailure.Offline, "a")
+            if (index == 0) loaded("a", hasMore = true) else degraded(PokemonFailure.Offline, "a")
         }
         advanceUntilIdle()
 
@@ -189,7 +200,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `畳まれたら共通コアを閉じる`() = runTest(dispatcher) {
-        val stub = StubPaging { loaded("a") }
+        val stub = StubPaging(page = { loaded("a") })
         val model = PokemonListViewModel(stub)
         advanceUntilIdle()
 
@@ -302,5 +313,52 @@ class PokemonListViewModelTest {
 
         assertEquals(R.string.error_unexpected, failed.messageRes)
         assertTrue(failed.canRetry)
+    }
+
+    @Test
+    fun `詳細だけを取り直せる`() = runTest(dispatcher) {
+        val stub = StubPaging(
+            page = { loaded("a", "b", hasDetail = false) },
+            repair = { loaded("a", "b", hasDetail = true) },
+        )
+        val model = PokemonListViewModel(stub)
+        advanceUntilIdle()
+
+        assertEquals(2, (model.uiState.value as PokemonListUiState.Loaded).incompleteCount)
+
+        model.retryMissingDetails()
+        advanceUntilIdle()
+
+        assertEquals(1, stub.repairCalls)
+        assertEquals("詳細の取り直しでページを読み直している", 1, stub.calls)
+        assertEquals(0, (model.uiState.value as PokemonListUiState.Loaded).incompleteCount)
+    }
+
+    @Test
+    fun `取り直す詳細が無いなら共通コアに頼まない`() = runTest(dispatcher) {
+        val stub = StubPaging(page = { loaded("a") })
+        val model = PokemonListViewModel(stub)
+        advanceUntilIdle()
+
+        model.retryMissingDetails()
+        advanceUntilIdle()
+
+        assertEquals(0, stub.repairCalls)
+    }
+
+    @Test
+    fun `捨てられた結果は表示も進行中の印も変えない`() = runTest(dispatcher) {
+        val model = viewModel { index ->
+            if (index == 0) loaded("a", hasMore = true) else PokemonListResult.Stale
+        }
+        advanceUntilIdle()
+
+        model.loadMore()
+        advanceUntilIdle()
+
+        val uiState = model.uiState.value as PokemonListUiState.Loaded
+
+        assertEquals(listOf("a"), uiState.pokemon.map { it.name })
+        assertFalse("読み込み中の印が残っている", uiState.isLoadingMore)
     }
 }
