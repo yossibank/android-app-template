@@ -10,9 +10,11 @@
     <string name="pokemon_list_no_match_description">綴りを確認するか、別の語で試してください</string>
     <string name="pokemon_list_number">#%1$03d</string>
     <string name="pokemon_list_incomplete">%1$d 件の詳細を取得できませんでした</string>
-    <string name="pokemon_list_total">合計 %1$d</string>
+    <string name="pokemon_list_total">%1$d</string>
+    <string name="pokemon_list_total_caption">種族値</string>
 
     <string name="action_reload">再取得</string>
+    <string name="action_retry_details">詳細だけ取り直す</string>
 
     <string name="error_offline">接続を確認してください</string>
     <string name="error_timeout">時間内に応答がありませんでした</string>

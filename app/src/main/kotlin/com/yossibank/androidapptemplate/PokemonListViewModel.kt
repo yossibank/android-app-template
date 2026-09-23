@@ -38,7 +38,18 @@ class PokemonListViewModel(
 
         latest.startIfIdle {
             mutableUiState.value = current.copy(isLoadingMore = true, notice = null)
-            nextPage()
+            fetched { paging.loadNext() }
+        }
+    }
+
+    fun retryMissingDetails() {
+        val current = mutableUiState.value
+
+        if (current !is PokemonListUiState.Loaded || current.incompleteCount == 0) return
+
+        latest.startIfIdle {
+            mutableUiState.value = current.copy(isRepairingDetails = true, notice = null)
+            fetched { paging.retryMissingDetails() }
         }
     }
 
@@ -46,17 +57,21 @@ class PokemonListViewModel(
         paging.close()
     }
 
-    private suspend fun nextPage(): PokemonListUiState = try {
-        when (val result = paging.loadNext()) {
+    private suspend fun nextPage(): PokemonListUiState = fetched { paging.loadNext() }
+
+    private suspend fun fetched(fetch: suspend () -> PokemonListResult): PokemonListUiState = try {
+        when (val result = fetch()) {
             is PokemonListResult.Loaded ->
                 loaded(result.pokemon, result.hasMore, result.incompleteCount, notice = null)
 
+            is PokemonListResult.Degraded ->
+                loaded(result.pokemon, result.hasMore, result.incompleteCount, result.failure.toNotice())
+
             is PokemonListResult.Failed ->
-                if (result.pokemon.isEmpty()) {
-                    result.failure.toFailed()
-                } else {
-                    loaded(result.pokemon, result.hasMore, result.incompleteCount, result.failure.toNotice())
-                }
+                result.failure.toFailed()
+
+            PokemonListResult.Stale ->
+                settled(mutableUiState.value)
         }
     } catch (e: CancellationException) {
         throw e
@@ -65,6 +80,12 @@ class PokemonListViewModel(
             messageRes = R.string.error_unexpected,
             canRetry = true,
         )
+    }
+
+    private fun settled(uiState: PokemonListUiState): PokemonListUiState = if (uiState is PokemonListUiState.Loaded) {
+        uiState.copy(isLoadingMore = false, isRepairingDetails = false)
+    } else {
+        uiState
     }
 
     private fun loaded(
@@ -96,6 +117,9 @@ private fun PokemonFailure.toFailed(): PokemonListUiState.Failed = when (this) {
 
     is PokemonFailure.Unexpected ->
         PokemonListUiState.Failed(R.string.error_unreadable, canRetry)
+
+    is PokemonFailure.Closed ->
+        PokemonListUiState.Failed(R.string.error_unexpected, canRetry)
 }
 
 private fun PokemonFailure.toNotice(): PokemonListUiState.Notice = toFailed().let {

@@ -2,6 +2,7 @@ package com.yossibank.androidapptemplate
 
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
+import com.yossibank.shared.PokemonStatKind
 import com.yossibank.shared.PokemonTypeKind
 
 @get:StringRes
@@ -49,4 +50,15 @@ val PokemonTypeKind.badgeColor: Color
         PokemonTypeKind.STEEL -> Color(0xFF60A1B8)
         PokemonTypeKind.FAIRY -> Color(0xFFEF70EF)
         PokemonTypeKind.UNKNOWN -> Color(0xFF68A090)
+    }
+
+val PokemonStatKind.barColor: Color
+    get() = when (this) {
+        PokemonStatKind.HP -> Color(0xFF6ABE5A)
+        PokemonStatKind.ATTACK -> Color(0xFFE8734A)
+        PokemonStatKind.DEFENSE -> Color(0xFF4A90D9)
+        PokemonStatKind.SPECIAL_ATTACK -> Color(0xFF9B6BD6)
+        PokemonStatKind.SPECIAL_DEFENSE -> Color(0xFF3FB6A8)
+        PokemonStatKind.SPEED -> Color(0xFFE0B03A)
+        PokemonStatKind.OTHER -> Color(0xFF9E9E9E)
     }
