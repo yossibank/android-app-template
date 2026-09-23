@@ -15,6 +15,20 @@
 
     <string name="action_reload">再取得</string>
     <string name="action_retry_details">詳細だけ取り直す</string>
+    <string name="action_close">閉じる</string>
+
+    <string name="pokemon_list_filter_all">すべて</string>
+    <string name="pokemon_list_no_type_match">このタイプのポケモンは読み込み済みの中にいません</string>
+    <string name="pokemon_list_no_type_match_description">下に進んで続きを読み込むと見つかるかもしれません</string>
+    <string name="pokemon_detail_missing">このポケモンの詳細は取得できていません</string>
+
+    <string name="stat_hp">HP</string>
+    <string name="stat_attack">こうげき</string>
+    <string name="stat_defense">ぼうぎょ</string>
+    <string name="stat_special_attack">とくこう</string>
+    <string name="stat_special_defense">とくぼう</string>
+    <string name="stat_speed">すばやさ</string>
+    <string name="stat_other">その他</string>
 
     <string name="error_offline">接続を確認してください</string>
     <string name="error_timeout">時間内に応答がありませんでした</string>
