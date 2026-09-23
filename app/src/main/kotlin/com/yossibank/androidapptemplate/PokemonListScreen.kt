@@ -51,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,7 +59,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.yossibank.androidapptemplate.core.standardContains
 import com.yossibank.shared.PokemonBaseStat
 import com.yossibank.shared.PokemonEntry
@@ -329,6 +332,7 @@ private fun PokemonCard(
             Artwork(
                 detail = detail,
                 fallback = pokemon.name,
+                accent = accent,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f),
@@ -377,38 +381,45 @@ private fun PokemonCard(
 private fun Artwork(
     detail: PokemonEntryDetail.Loaded?,
     fallback: String,
+    accent: Color,
     modifier: Modifier = Modifier,
 ) {
+    val large = detail?.artworkUrl ?: detail?.spriteUrl
+
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        if (detail?.spriteUrl != null) {
-            AsyncImage(
-                model = detail.spriteUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-
-        val large = detail?.artworkUrl ?: detail?.spriteUrl
-
-        if (large != null) {
-            AsyncImage(
-                model = large,
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-
-        if (detail == null) {
+        if (large == null) {
             Text(
                 text = fallback.take(1).uppercase(),
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        } else {
+            SubcomposeAsyncImage(
+                model = ImageRequest
+                    .Builder(LocalContext.current)
+                    .data(large)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                loading = { Disc(accent) },
+                error = { Disc(accent) },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
+}
+
+@Composable
+private fun Disc(accent: Color) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(14.dp)
+            .clip(CircleShape)
+            .background(accent.copy(alpha = 0.12f)),
+    )
 }
 
 @Composable
@@ -510,6 +521,7 @@ private fun PokemonSheet(
             Artwork(
                 detail = detail,
                 fallback = pokemon.name,
+                accent = accent,
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
                     .aspectRatio(1f),
