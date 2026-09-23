@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
 import com.yossibank.androidapptemplate.core.standardContains
 import com.yossibank.shared.PokemonBaseStat
 import com.yossibank.shared.PokemonEntry
@@ -379,33 +380,26 @@ private fun Artwork(
     fallback: String,
     modifier: Modifier = Modifier,
 ) {
+    val large = detail?.artworkUrl ?: detail?.spriteUrl
+
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        if (detail?.spriteUrl != null) {
-            AsyncImage(
-                model = detail.spriteUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-
-        val large = detail?.artworkUrl ?: detail?.spriteUrl
-
-        if (large != null) {
-            AsyncImage(
-                model = large,
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-
-        if (detail == null) {
+        if (large == null) {
             Text(
                 text = fallback.take(1).uppercase(),
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            val preview = rememberAsyncImagePainter(model = detail?.spriteUrl)
+
+            AsyncImage(
+                model = large,
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                placeholder = preview,
+                error = preview,
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }
