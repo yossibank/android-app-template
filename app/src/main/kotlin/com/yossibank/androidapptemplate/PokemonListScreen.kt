@@ -1,11 +1,13 @@
 package com.yossibank.androidapptemplate
 
 import android.content.res.Configuration
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -27,6 +30,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -42,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -56,7 +62,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.SubcomposeAsyncImage
@@ -107,8 +112,10 @@ private fun PokemonListScaffold(
     var query by rememberSaveable { mutableStateOf("") }
     var typeName by rememberSaveable { mutableStateOf<String?>(null) }
     var openedId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var sortName by rememberSaveable { mutableStateOf(PokemonSort.NUMBER.name) }
 
     val selectedType = typeName?.let { name -> PokemonTypeKind.entries.first { it.name == name } }
+    val sort = PokemonSort.valueOf(sortName)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -129,6 +136,8 @@ private fun PokemonListScaffold(
             onQueryChange = { query = it },
             selectedType = selectedType,
             onTypeChange = { typeName = it?.name },
+            sort = sort,
+            onSortChange = { sortName = it.name },
             onRetry = onRetry,
             onRetryDetails = onRetryDetails,
             onRefresh = onRefresh,
@@ -154,6 +163,8 @@ private fun PokemonList(
     onQueryChange: (String) -> Unit,
     selectedType: PokemonTypeKind?,
     onTypeChange: (PokemonTypeKind?) -> Unit,
+    sort: PokemonSort,
+    onSortChange: (PokemonSort) -> Unit,
     onRetry: () -> Unit,
     onRetryDetails: () -> Unit,
     onRefresh: () -> Unit,
@@ -178,6 +189,15 @@ private fun PokemonList(
 
         is PokemonListUiState.Loaded ->
             Searchable(query = query, onQueryChange = onQueryChange, modifier = modifier) {
+                ListToolbar(
+                    shown = uiState.pokemon.count { it.name.standardContains(query) && it.matches(selectedType) },
+                    loaded = uiState.pokemon.size,
+                    total = uiState.total,
+                    filtering = query.isNotEmpty() || selectedType != null,
+                    sort = sort,
+                    onSortChange = onSortChange,
+                )
+
                 TypeFilters(
                     types = uiState.pokemon.availableTypes(),
                     selected = selectedType,
@@ -188,6 +208,8 @@ private fun PokemonList(
                     uiState = uiState,
                     query = query,
                     selectedType = selectedType,
+                    sort = sort,
+                    onSortChange = onSortChange,
                     onLoadMore = onLoadMore,
                     onRetry = onRetry,
                     onRetryDetails = onRetryDetails,
@@ -212,15 +234,17 @@ private fun LoadedGrid(
     uiState: PokemonListUiState.Loaded,
     query: String,
     selectedType: PokemonTypeKind?,
+    sort: PokemonSort,
+    onSortChange: (PokemonSort) -> Unit,
     onLoadMore: () -> Unit,
     onRetry: () -> Unit,
     onRetryDetails: () -> Unit,
     onRefresh: () -> Unit,
     onOpen: (PokemonEntry) -> Unit,
 ) {
-    val filtered = uiState.pokemon.filter { pokemon ->
-        pokemon.name.standardContains(query) && pokemon.matches(selectedType)
-    }
+    val filtered = uiState.pokemon
+        .filter { pokemon -> pokemon.name.standardContains(query) && pokemon.matches(selectedType) }
+        .sortedWith(sort.comparator)
 
     val gridState = rememberLazyGridState()
     val isFiltering = query.isNotEmpty() || selectedType != null
@@ -314,66 +338,98 @@ private fun PokemonCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .background(
-                    Brush.verticalGradient(
-                        listOf(accent.copy(alpha = 0.28f), accent.copy(alpha = 0.06f), Color.Transparent),
-                    ),
-                ).padding(horizontal = 12.dp, vertical = 10.dp),
+        Box(
+            modifier = Modifier.background(
+                Brush.verticalGradient(
+                    listOf(accent.copy(alpha = 0.28f), accent.copy(alpha = 0.06f), Color.Transparent),
+                ),
+            ),
         ) {
             Text(
-                text = stringResource(R.string.pokemon_list_number, pokemon.id),
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Artwork(
-                detail = detail,
-                fallback = pokemon.name,
-                accent = accent,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f),
-            )
-
-            Text(
-                text = pokemon.name.replaceFirstChar { it.uppercase() },
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
+                text = stringResource(R.string.pokemon_list_number_plain, pokemon.id),
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Black,
+                color = accent.copy(alpha = 0.10f),
                 maxLines = 1,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(horizontal = 6.dp),
             )
 
-            val types = detail?.types.orEmpty()
+            Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                Text(
+                    text = stringResource(R.string.pokemon_list_number, pokemon.id),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
 
-            if (types.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    types.forEach { TypeBadge(it) }
+                Artwork(
+                    detail = detail,
+                    fallback = pokemon.name,
+                    accent = accent,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f),
+                )
+
+                Text(
+                    text = pokemon.name.replaceFirstChar { it.uppercase() },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                )
+
+                val types = detail?.types.orEmpty()
+
+                if (types.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        types.forEach { TypeBadge(it) }
+                    }
                 }
-            }
 
-            if (detail != null && detail.baseStats.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    StatBar(
-                        stats = detail.baseStats,
-                        total = detail.totalBaseStat,
-                        modifier = Modifier.weight(1f),
-                    )
-
-                    Spacer(modifier = Modifier.size(8.dp))
-
-                    Text(
-                        text = stringResource(R.string.pokemon_list_total, detail.totalBaseStat),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = accent,
-                    )
+                if (detail != null && detail.baseStats.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    TotalBar(total = detail.totalBaseStat, accent = accent)
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TotalBar(
+    total: Int,
+    accent: Color,
+) {
+    FlowRow(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        itemVerticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .widthIn(min = 48.dp)
+                .height(7.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth((total / MAX_TOTAL_BASE_STAT).coerceIn(0.04f, 1f))
+                    .fillMaxHeight()
+                    .clip(CircleShape)
+                    .background(accent),
+            )
+        }
+
+        Text(
+            text = stringResource(R.string.pokemon_list_total, total),
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 
@@ -422,32 +478,71 @@ private fun Disc(accent: Color) {
     )
 }
 
-@Composable
-private fun StatBar(
-    stats: List<PokemonBaseStat>,
-    total: Int,
-    modifier: Modifier = Modifier,
+private enum class PokemonSort(
+    @param:StringRes val labelRes: Int,
+    val comparator: Comparator<PokemonEntry>,
 ) {
-    val fraction = (total / MAX_TOTAL_BASE_STAT).coerceIn(0.04f, 1f)
+    NUMBER(R.string.pokemon_list_sort_number, compareBy { it.id }),
+    TOTAL(
+        R.string.pokemon_list_sort_total,
+        compareByDescending { (it.detail as? PokemonEntryDetail.Loaded)?.totalBaseStat ?: -1 },
+    ),
+    NAME(R.string.pokemon_list_sort_name, compareBy { it.name }),
+}
 
-    Box(
-        modifier = modifier
-            .height(7.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+@Composable
+private fun ListToolbar(
+    shown: Int,
+    loaded: Int,
+    total: Int,
+    filtering: Boolean,
+    sort: PokemonSort,
+    onSortChange: (PokemonSort) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(fraction)
-                .fillMaxHeight()
-                .clip(CircleShape),
-        ) {
-            stats.forEach { stat ->
-                Box(
-                    modifier = Modifier
-                        .weight(stat.value.coerceAtLeast(1).toFloat())
-                        .fillMaxHeight()
-                        .background(stat.kind.barColor),
+        Text(
+            text = if (filtering) {
+                stringResource(R.string.pokemon_list_progress_filtered, shown, total, loaded)
+            } else {
+                stringResource(R.string.pokemon_list_progress, loaded, total)
+            },
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+
+        SortMenu(sort = sort, onSortChange = onSortChange)
+    }
+}
+
+@Composable
+private fun SortMenu(
+    sort: PokemonSort,
+    onSortChange: (PokemonSort) -> Unit,
+) {
+    var open by remember { mutableStateOf(false) }
+
+    Box {
+        TextButton(onClick = { open = true }) {
+            Text(
+                text = stringResource(sort.labelRes),
+                style = MaterialTheme.typography.labelMedium,
+            )
+        }
+
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            PokemonSort.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(option.labelRes)) },
+                    onClick = {
+                        onSortChange(option)
+                        open = false
+                    },
                 )
             }
         }
@@ -502,7 +597,11 @@ private fun PokemonSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(accent.copy(alpha = 0.26f), accent.copy(alpha = 0.04f), Color.Transparent),
+                    ),
+                ).padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -559,7 +658,6 @@ private fun PokemonSheet(
                         text = stringResource(R.string.pokemon_list_total, detail.totalBaseStat),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = accent,
                     )
                 }
 
@@ -688,8 +786,7 @@ private fun TypeBadge(type: PokemonTypeKind) {
         text = stringResource(type.labelRes),
         style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 10.sp,
-        color = Color.White,
+        color = type.onBadgeColor,
         modifier = Modifier
             .clip(CircleShape)
             .background(type.badgeColor)

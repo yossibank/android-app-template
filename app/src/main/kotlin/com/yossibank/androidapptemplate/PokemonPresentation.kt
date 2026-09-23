@@ -2,6 +2,7 @@ package com.yossibank.androidapptemplate
 
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import com.yossibank.shared.PokemonStatKind
 import com.yossibank.shared.PokemonTypeKind
 
@@ -32,7 +33,7 @@ val PokemonTypeKind.labelRes: Int
 val PokemonTypeKind.badgeColor: Color
     get() = when (this) {
         PokemonTypeKind.NORMAL -> Color(0xFF9FA19F)
-        PokemonTypeKind.FIRE -> Color(0xFFE62829)
+        PokemonTypeKind.FIRE -> Color(0xFFDC2426)
         PokemonTypeKind.WATER -> Color(0xFF2980EF)
         PokemonTypeKind.ELECTRIC -> Color(0xFFCFA100)
         PokemonTypeKind.GRASS -> Color(0xFF3FA129)
@@ -63,6 +64,9 @@ val PokemonStatKind.labelRes: Int
         PokemonStatKind.SPEED -> R.string.stat_speed
         PokemonStatKind.OTHER -> R.string.stat_other
     }
+
+val PokemonTypeKind.onBadgeColor: Color
+    get() = if (badgeColor.luminance() > 0.18f) Color(0xFF1A1A1A) else Color.White
 
 val PokemonStatKind.barColor: Color
     get() = when (this) {

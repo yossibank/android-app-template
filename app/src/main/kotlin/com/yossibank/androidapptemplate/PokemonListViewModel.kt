@@ -77,10 +77,16 @@ class PokemonListViewModel(
     private suspend fun fetched(fetch: suspend () -> PokemonListResult): PokemonListUiState = try {
         when (val result = fetch()) {
             is PokemonListResult.Loaded ->
-                loaded(result.pokemon, result.hasMore, result.incompleteCount, notice = null)
+                loaded(result.pokemon, result.hasMore, result.incompleteCount, result.total, notice = null)
 
             is PokemonListResult.Degraded ->
-                loaded(result.pokemon, result.hasMore, result.incompleteCount, result.failure.toNotice())
+                loaded(
+                    result.pokemon,
+                    result.hasMore,
+                    result.incompleteCount,
+                    result.total,
+                    result.failure.toNotice(),
+                )
 
             is PokemonListResult.Failed ->
                 result.failure.toFailed()
@@ -107,6 +113,7 @@ class PokemonListViewModel(
         pokemon: List<PokemonEntry>,
         hasMore: Boolean,
         incompleteCount: Int,
+        total: Int,
         notice: PokemonListUiState.Notice?,
     ): PokemonListUiState = if (pokemon.isEmpty()) {
         PokemonListUiState.Empty
@@ -115,6 +122,7 @@ class PokemonListViewModel(
             pokemon = pokemon,
             hasMore = hasMore,
             incompleteCount = incompleteCount,
+            total = total,
             notice = notice,
         )
     }
