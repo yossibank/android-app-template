@@ -12,7 +12,10 @@ Jetpack Compose と Kotlin Multiplatform で作る、ポケモン図鑑アプリ
 ![Coroutines](https://img.shields.io/badge/Coroutines-7F52FF?logo=kotlin&logoColor=white)
 ![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
 
-<img src="docs/images/demo.gif" width="260" alt="スクロールで続きを読み込み、タイプで絞り込む">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/demo-dark.gif">
+  <img src="docs/images/demo.gif" width="260" alt="スクロールで続きを読み込み、タイプで絞り込む">
+</picture>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/list-dark.png">
   <img src="docs/images/list-light.png" width="260" alt="ポケモンの一覧">
