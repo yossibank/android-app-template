@@ -7,10 +7,10 @@ endif
 .PHONY: verify verify-debug lint format build release test clean
 
 verify:
-	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest :core:test assembleRelease $(GRADLE_FLAGS)
+	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest assembleRelease $(GRADLE_FLAGS)
 
 verify-debug:
-	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest :core:test $(GRADLE_FLAGS)
+	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest $(GRADLE_FLAGS)
 
 lint:
 	$(GRADLE) ktlintCheck $(GRADLE_FLAGS)
@@ -25,7 +25,7 @@ release:
 	$(GRADLE) assembleRelease $(GRADLE_FLAGS)
 
 test:
-	$(GRADLE) testDebugUnitTest :core:test $(GRADLE_FLAGS)
+	$(GRADLE) testDebugUnitTest $(GRADLE_FLAGS)
 
 clean:
 	$(GRADLE) clean

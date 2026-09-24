@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Android App Template</string>
+    <string name="screen_retry">再取得</string>
 </resources>

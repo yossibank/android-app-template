@@ -37,6 +37,13 @@ dependencyResolutionManagement {
     }
 }
 
+providers
+    .gradleProperty("shared.dir")
+    .orElse(providers.environmentVariable("SHARED_DIR"))
+    .orNull
+    ?.let { includeBuild(it) }
+
 rootProject.name = "android-app-template"
 include(":app")
-include(":core")
+include(":core:screen")
+include(":feature:home")
