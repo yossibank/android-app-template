@@ -53,7 +53,7 @@ class PokemonListViewModel(
 
         latest.startIfIdle {
             mutableUiState.value = current.copy(isLoadingMore = true, notice = null)
-            fetched { paging.loadNext() }
+            fetched(Notice.Retry.LOAD_MORE) { paging.loadNext() }
         }
     }
 
@@ -64,7 +64,7 @@ class PokemonListViewModel(
 
         latest.startIfIdle {
             mutableUiState.value = current.copy(isRepairingDetails = true, notice = null)
-            fetched { paging.retryMissingDetails() }
+            fetched(Notice.Retry.REPAIR) { paging.retryMissingDetails() }
         }
     }
 
@@ -72,9 +72,12 @@ class PokemonListViewModel(
         paging.close()
     }
 
-    private suspend fun nextPage(): PokemonListUiState = fetched { paging.loadNext() }
+    private suspend fun nextPage(): PokemonListUiState = fetched(Notice.Retry.LOAD_MORE) { paging.loadNext() }
 
-    private suspend fun fetched(fetch: suspend () -> PokemonListResult): PokemonListUiState = try {
+    private suspend fun fetched(
+        retry: Notice.Retry,
+        fetch: suspend () -> PokemonListResult,
+    ): PokemonListUiState = try {
         when (val result = fetch()) {
             is PokemonListResult.Loaded ->
                 loaded(
@@ -82,7 +85,7 @@ class PokemonListViewModel(
                     result.hasMore,
                     result.incompleteCount,
                     result.total,
-                    result.failure?.toErrorMessage(),
+                    result.failure?.let { Notice(it.toErrorMessage(), retry) },
                 )
 
             is PokemonListResult.Failed ->
@@ -108,7 +111,7 @@ class PokemonListViewModel(
         hasMore: Boolean,
         incompleteCount: Int,
         total: Int,
-        notice: ErrorMessage?,
+        notice: Notice?,
     ): PokemonListUiState = if (pokemon.isEmpty()) {
         PokemonListUiState.Empty
     } else {

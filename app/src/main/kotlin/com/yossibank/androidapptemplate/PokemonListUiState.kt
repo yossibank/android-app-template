@@ -16,7 +16,7 @@ sealed interface PokemonListUiState {
         val isRefreshing: Boolean = false,
         val incompleteCount: Int = 0,
         val total: Int = 0,
-        val notice: ErrorMessage? = null,
+        val notice: Notice? = null,
     ) : PokemonListUiState
 
     data class Failed(
@@ -29,3 +29,13 @@ data class ErrorMessage(
     val canRetry: Boolean,
     val formatArgs: List<Any> = emptyList(),
 )
+
+data class Notice(
+    val error: ErrorMessage,
+    val retry: Retry,
+) {
+    enum class Retry {
+        LOAD_MORE,
+        REPAIR,
+    }
+}

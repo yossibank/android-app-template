@@ -188,7 +188,25 @@ class PokemonListViewModelTest {
         advanceUntilIdle()
 
         val uiState = model.uiState.value as PokemonListUiState.Loaded
-        assertEquals(R.string.error_offline, uiState.notice?.messageRes)
+        assertEquals(R.string.error_offline, uiState.notice?.error?.messageRes)
+        assertEquals("続きの失敗なのに続きを読み直さない", Notice.Retry.LOAD_MORE, uiState.notice?.retry)
+    }
+
+    @Test
+    fun `詳細の取り直しの失敗は取り直しとして知らせに出る`() = runTest(dispatcher) {
+        val stub = StubPaging(
+            page = { loaded("a", "b", hasDetail = false) },
+            repair = { degraded(PokemonFailure.Offline, "a", "b") },
+        )
+        val model = PokemonListViewModel(stub)
+        advanceUntilIdle()
+
+        model.retryMissingDetails()
+        advanceUntilIdle()
+
+        val uiState = model.uiState.value as PokemonListUiState.Loaded
+        assertEquals(R.string.error_offline, uiState.notice?.error?.messageRes)
+        assertEquals("取り直しの失敗なのに続きを読もうとしている", Notice.Retry.REPAIR, uiState.notice?.retry)
     }
 
     @Test
