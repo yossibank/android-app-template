@@ -23,7 +23,7 @@ Jetpack Compose と Kotlin Multiplatform で作る、ポケモン図鑑アプリ
 
 </div>
 
-PokeAPI のポケモンを、無限スクロール・タイプでの絞り込み・並び替え・詳細シートで見られます。データの取得とページングは共通コア（Kotlin Multiplatform）が担い、このリポジトリは Android の画面と状態管理だけを持ちます。
+PokeAPI のポケモンを、無限スクロール・タイプでの絞り込み・並び替え・詳細シートで見られます。
 
 ## 3 つのリポジトリ
 
