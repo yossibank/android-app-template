@@ -15,6 +15,7 @@ sealed interface PokemonListUiState {
         val isRepairingDetails: Boolean = false,
         val isRefreshing: Boolean = false,
         val incompleteCount: Int = 0,
+        val total: Int = 0,
         val notice: Notice? = null,
     ) : PokemonListUiState
 

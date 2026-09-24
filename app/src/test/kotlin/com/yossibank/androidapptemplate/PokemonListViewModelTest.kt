@@ -28,7 +28,7 @@ import org.junit.Test
 
 private class StubPaging(
     private val page: suspend (Int) -> PokemonListResult,
-    private val repair: suspend () -> PokemonListResult = { PokemonListResult.Loaded(emptyList(), hasMore = false) },
+    private val repair: suspend () -> PokemonListResult = { PokemonListResult.Loaded(emptyList(), hasMore = false, total = 0) },
 ) : PokemonPaging {
     var calls = 0
         private set
@@ -87,6 +87,7 @@ private fun loaded(
 ) = PokemonListResult.Loaded(
     pokemon = entries(names, hasDetail),
     hasMore = hasMore,
+    total = 1351,
 )
 
 private fun degraded(
@@ -95,6 +96,7 @@ private fun degraded(
 ) = PokemonListResult.Degraded(
     pokemon = entries(names),
     hasMore = true,
+    total = 1351,
     failure = failure,
 )
 
@@ -129,7 +131,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `結果が空なら Empty になる`() = runTest(dispatcher) {
-        val model = viewModel { PokemonListResult.Loaded(emptyList(), hasMore = false) }
+        val model = viewModel { PokemonListResult.Loaded(emptyList(), hasMore = false, total = 0) }
 
         advanceUntilIdle()
 
@@ -188,6 +190,15 @@ class PokemonListViewModelTest {
 
         val uiState = model.uiState.value as PokemonListUiState.Loaded
         assertEquals(R.string.error_offline, uiState.notice?.messageRes)
+    }
+
+    @Test
+    fun `全体件数が表示状態まで届く`() = runTest(dispatcher) {
+        val model = viewModel { loaded("a") }
+
+        advanceUntilIdle()
+
+        assertEquals(1351, (model.uiState.value as PokemonListUiState.Loaded).total)
     }
 
     @Test

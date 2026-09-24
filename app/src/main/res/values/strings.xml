@@ -9,6 +9,7 @@
     <string name="pokemon_list_no_match_title">「%1$s」に一致するポケモンがいません</string>
     <string name="pokemon_list_no_match_description">綴りを確認するか、別の語で試してください</string>
     <string name="pokemon_list_number">#%1$03d</string>
+    <string name="pokemon_list_number_plain">%1$03d</string>
     <string name="pokemon_list_incomplete">%1$d 件の詳細を取得できませんでした</string>
     <string name="pokemon_list_total">%1$d</string>
     <string name="pokemon_list_total_caption">種族値</string>
@@ -18,6 +19,12 @@
     <string name="action_close">閉じる</string>
 
     <string name="pokemon_list_filter_all">すべて</string>
+    <string name="pokemon_list_progress">%1$d / %2$d</string>
+    <string name="pokemon_list_progress_filtered">%1$d 件（全 %2$d 件中 %3$d 件読み込み済み）</string>
+    <string name="pokemon_list_sort">並び替え</string>
+    <string name="pokemon_list_sort_number">図鑑番号</string>
+    <string name="pokemon_list_sort_total">種族値が高い順</string>
+    <string name="pokemon_list_sort_name">名前</string>
     <string name="pokemon_list_no_type_match">このタイプのポケモンは読み込み済みの中にいません</string>
     <string name="pokemon_list_no_type_match_description">下に進んで続きを読み込むと見つかるかもしれません</string>
     <string name="pokemon_detail_missing">このポケモンの詳細は取得できていません</string>

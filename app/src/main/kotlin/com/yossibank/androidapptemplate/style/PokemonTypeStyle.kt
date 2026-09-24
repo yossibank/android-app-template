@@ -1,8 +1,9 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.style
 
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
-import com.yossibank.shared.PokemonStatKind
+import androidx.compose.ui.graphics.luminance
+import com.yossibank.androidapptemplate.R
 import com.yossibank.shared.PokemonTypeKind
 
 @get:StringRes
@@ -32,7 +33,7 @@ val PokemonTypeKind.labelRes: Int
 val PokemonTypeKind.badgeColor: Color
     get() = when (this) {
         PokemonTypeKind.NORMAL -> Color(0xFF9FA19F)
-        PokemonTypeKind.FIRE -> Color(0xFFE62829)
+        PokemonTypeKind.FIRE -> Color(0xFFDC2426)
         PokemonTypeKind.WATER -> Color(0xFF2980EF)
         PokemonTypeKind.ELECTRIC -> Color(0xFFCFA100)
         PokemonTypeKind.GRASS -> Color(0xFF3FA129)
@@ -52,25 +53,5 @@ val PokemonTypeKind.badgeColor: Color
         PokemonTypeKind.UNKNOWN -> Color(0xFF68A090)
     }
 
-@get:StringRes
-val PokemonStatKind.labelRes: Int
-    get() = when (this) {
-        PokemonStatKind.HP -> R.string.stat_hp
-        PokemonStatKind.ATTACK -> R.string.stat_attack
-        PokemonStatKind.DEFENSE -> R.string.stat_defense
-        PokemonStatKind.SPECIAL_ATTACK -> R.string.stat_special_attack
-        PokemonStatKind.SPECIAL_DEFENSE -> R.string.stat_special_defense
-        PokemonStatKind.SPEED -> R.string.stat_speed
-        PokemonStatKind.OTHER -> R.string.stat_other
-    }
-
-val PokemonStatKind.barColor: Color
-    get() = when (this) {
-        PokemonStatKind.HP -> Color(0xFF6ABE5A)
-        PokemonStatKind.ATTACK -> Color(0xFFE8734A)
-        PokemonStatKind.DEFENSE -> Color(0xFF4A90D9)
-        PokemonStatKind.SPECIAL_ATTACK -> Color(0xFF9B6BD6)
-        PokemonStatKind.SPECIAL_DEFENSE -> Color(0xFF3FB6A8)
-        PokemonStatKind.SPEED -> Color(0xFFE0B03A)
-        PokemonStatKind.OTHER -> Color(0xFF9E9E9E)
-    }
+val PokemonTypeKind.onBadgeColor: Color
+    get() = if (badgeColor.luminance() > 0.18f) Color(0xFF1A1A1A) else Color.White
