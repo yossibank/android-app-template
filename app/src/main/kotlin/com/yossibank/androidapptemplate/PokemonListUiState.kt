@@ -1,8 +1,6 @@
 package com.yossibank.androidapptemplate
 
 import androidx.annotation.StringRes
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import com.yossibank.shared.PokemonEntry
 
 sealed interface PokemonListUiState {
@@ -18,7 +16,7 @@ sealed interface PokemonListUiState {
         val isRefreshing: Boolean = false,
         val incompleteCount: Int = 0,
         val total: Int = 0,
-        val notice: ErrorMessage? = null,
+        val notice: Notice? = null,
     ) : PokemonListUiState
 
     data class Failed(
@@ -30,7 +28,14 @@ data class ErrorMessage(
     @StringRes val messageRes: Int,
     val canRetry: Boolean,
     val formatArgs: List<Any> = emptyList(),
+)
+
+data class Notice(
+    val error: ErrorMessage,
+    val retry: Retry,
 ) {
-    val text: String
-        @Composable get() = stringResource(messageRes, *formatArgs.toTypedArray())
+    enum class Retry {
+        LOAD_MORE,
+        REPAIR,
+    }
 }

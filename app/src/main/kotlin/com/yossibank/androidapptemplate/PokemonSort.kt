@@ -25,7 +25,6 @@ fun List<PokemonEntry>.availableTypes(): List<PokemonTypeKind> = asSequence()
     .mapNotNull { it.loadedDetail }
     .flatMap { it.types }
     .distinct()
-    .sortedBy { it.ordinal }
     .toList()
 
 fun List<PokemonEntry>.filtered(

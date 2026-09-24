@@ -188,7 +188,7 @@ fun PokemonList(
 
         is PokemonListUiState.Failed ->
             Message(
-                text = uiState.error.text,
+                text = uiState.error.text(),
                 color = MaterialTheme.colorScheme.error,
                 onRetry = onRetry.takeIf { uiState.error.canRetry },
                 modifier = modifier,
@@ -264,9 +264,16 @@ fun LoadedGrid(
             uiState.notice?.let { notice ->
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Banner(
-                        text = notice.text,
+                        text = notice.error.text(),
                         color = MaterialTheme.colorScheme.error,
-                        onRetry = if (notice.canRetry) onLoadMore else onRetry,
+                        onRetry = if (!notice.error.canRetry) {
+                            onRetry
+                        } else {
+                            when (notice.retry) {
+                                Notice.Retry.LOAD_MORE -> onLoadMore
+                                Notice.Retry.REPAIR -> onRetryDetails
+                            }
+                        },
                     )
                 }
             }
@@ -286,3 +293,6 @@ fun LoadedGrid(
         }
     }
 }
+
+@Composable
+private fun ErrorMessage.text(): String = stringResource(messageRes, *formatArgs.toTypedArray())
