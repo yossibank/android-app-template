@@ -1,24 +1,44 @@
+<div align="center">
+
 # android-app-template
 
-> Android アプリの初期テンプレート。Jetpack Compose の 1 画面のみを含む最小構成。
+Jetpack Compose と Kotlin Multiplatform で作る、ポケモン図鑑アプリのテンプレート
 
-書き方の規約は [CLAUDE.md](CLAUDE.md)。
+[![Verify](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml/badge.svg)](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml)
+[![License](https://img.shields.io/github/license/yossibank/android-app-template)](LICENSE)
 
-## 3 リポジトリの関係
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-4285F4?logo=jetpackcompose&logoColor=white)
+![Coroutines](https://img.shields.io/badge/Coroutines-7F52FF?logo=kotlin&logoColor=white)
+![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/demo-dark.gif">
+  <img src="docs/images/demo.gif" width="260" alt="スクロールで続きを読み込み、タイプで絞り込む">
+</picture>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/list-dark.png">
+  <img src="docs/images/list-light.png" width="260" alt="ポケモンの一覧">
+</picture>
+
+</div>
+
+PokeAPI のポケモンを、無限スクロール・タイプでの絞り込み・並び替え・詳細シートで見られます。データの取得とページングは共通コア（Kotlin Multiplatform）が担い、このリポジトリは Android の画面と状態管理だけを持ちます。
+
+## 3 つのリポジトリ
 
 ```mermaid
 flowchart LR
     KMP["kmp-app-template<br/>共通ロジック"]
-    AND["android-app-template<br/>← このリポジトリ"]
+    AND["android-app-template<br/>Android アプリ"]
     IOS["ios-app-template<br/>iOS アプリ"]
     KMP -->|"AAR / klib"| AND
     KMP -->|"Shared.xcframework"| IOS
 ```
 
-[ios-app-template](https://github.com/yossibank/ios-app-template) ・
-[kmp-app-template](https://github.com/yossibank/kmp-app-template)
+[kmp-app-template](https://github.com/yossibank/kmp-app-template) ・ [ios-app-template](https://github.com/yossibank/ios-app-template)
 
-## モジュール構成
+## 構成
 
 ```mermaid
 flowchart LR
@@ -26,59 +46,22 @@ flowchart LR
     CORE[":core<br/><i>画面をまたぐ仕組み</i>"]
     VM["PokemonListViewModel"]
     SCREEN["PokemonListScreen"]
-    ACT["MainActivity"]
     SHARED --> VM
     CORE --> VM
     VM -->|"StateFlow&lt;PokemonListUiState&gt;"| SCREEN
-    SCREEN --> ACT
 ```
 
-`:app` と `:core` の 2 モジュール。1 画面を 3 つのファイルに分ける。
+`:app` は画面、`:core` は画面をまたいで使う仕組みを持ちます。`:core` は純 JVM のモジュールで、共通コアにも Android にも依存しません。
 
-| ファイル | モジュール | 役割 |
-| --- | --- | --- |
-| `PokemonListUiState.kt` | `:app` | 画面の状態（読み込み中 / 空 / 一覧 / 失敗） |
-| `PokemonListViewModel.kt` | `:app` | 取得と状態の保持。構成変更を跨いで生き残る |
-| `PokemonListScreen.kt` | `:app` | 状態を持つ Composable と、描画だけの Composable。Scaffold と AppBar も持つ |
-| `PokemonPaging.kt` | `:app` | 共通コアの境界。テストで差し替える |
-| `MainActivity.kt` | `:app` | 入口。テーマと画面の呼び出しだけ |
-| `LatestResult.kt` | `:core` | 最後に始めた取得の結果だけを状態に書く |
-| `TextMatching.kt` | `:core` | 絞り込みの一致規則。iOS の `localizedStandardContains` に合わせる |
+## 動かし方
 
-## ディレクトリ
+> [!NOTE]
+> 共通コアを GitHub Packages から取得するため、`~/.gradle/gradle.properties` に `gpr.user` / `gpr.token` が必要です。
 
-```
-app/
-├── build.gradle.kts        # 依存とビルド設定
-└── src/
-    ├── main/kotlin/        # 画面
-    └── test/kotlin/        # ViewModel のテスト
-core/
-├── build.gradle.kts        # 純 JVM モジュール
-└── src/
-    ├── main/kotlin/        # 画面をまたいで使う仕組み
-    └── test/kotlin/        # その単体テスト
-gradle/
-└── libs.versions.toml      # 依存とバージョン（ここにのみ書く）
-```
+<details>
+<summary>手順</summary>
 
-## コマンド
+1. Android Studio で開くか、`make build` でビルドする
+2. 変更したら `make verify` を通す
 
-| コマンド | 内容 |
-| --- | --- |
-| `make verify` | ktlint + デバッグ / リリースビルド + ユニットテスト（変更後はこれを通す） |
-| `make build` | デバッグ APK のみ |
-| `make release` | リリース APK のみ（R8 有効） |
-| `make test` | ユニットテストのみ |
-| `make lint` | ktlint によるチェック（`make verify` に含まれる） |
-| `make format` | ktlint で自動修正 |
-
-## 環境
-
-| 項目 | 出所 |
-| --- | --- |
-| AGP・Kotlin・Compose BOM・依存 | [gradle/libs.versions.toml](gradle/libs.versions.toml) |
-| Gradle | [gradle/wrapper/gradle-wrapper.properties](gradle/wrapper/gradle-wrapper.properties) |
-| compileSdk / targetSdk / minSdk・Java | [app/build.gradle.kts](app/build.gradle.kts) |
-| JDK（CI） | [.github/workflows/verify.yml](.github/workflows/verify.yml) |
-| 認証 | `~/.gradle/gradle.properties` に `gpr.user` / `gpr.token`（共通コアの取得に必要） |
+</details>
