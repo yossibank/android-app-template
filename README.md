@@ -1,13 +1,26 @@
+<div align="center">
+
 # android-app-template
 
-Jetpack Compose で作った Android アプリのテンプレートです。題材は PokeAPI のポケモン一覧で、無限スクロール・絞り込み・並び替え・詳細シートを備えています。
+Jetpack Compose と Kotlin Multiplatform で作る、ポケモン図鑑アプリのテンプレート
 
-データの取得とページングは Kotlin Multiplatform の共通コアが担い、このリポジトリは Android 固有の画面と状態管理だけを持ちます。
+[![Verify](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml/badge.svg)](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml)
+[![License](https://img.shields.io/github/license/yossibank/android-app-template)](LICENSE)
 
-<p>
-  <img src="docs/images/list-light.png" width="280" alt="一覧（ライト）">
-  <img src="docs/images/list-dark.png" width="280" alt="一覧（ダーク）">
-</p>
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-4285F4?logo=jetpackcompose&logoColor=white)
+![Coroutines](https://img.shields.io/badge/Coroutines-7F52FF?logo=kotlin&logoColor=white)
+![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
+
+<img src="docs/images/demo.gif" width="260" alt="スクロールで続きを読み込み、タイプで絞り込む">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/list-dark.png">
+  <img src="docs/images/list-light.png" width="260" alt="ポケモンの一覧">
+</picture>
+
+</div>
+
+PokeAPI のポケモンを、無限スクロール・タイプでの絞り込み・並び替え・詳細シートで見られます。データの取得とページングは共通コア（Kotlin Multiplatform）が担い、このリポジトリは Android の画面と状態管理だけを持ちます。
 
 ## 3 つのリポジトリ
 
@@ -20,8 +33,7 @@ flowchart LR
     KMP -->|"Shared.xcframework"| IOS
 ```
 
-- [kmp-app-template](https://github.com/yossibank/kmp-app-template) — 通信・ページング・エラーの分類
-- [ios-app-template](https://github.com/yossibank/ios-app-template) — 同じ画面の iOS 版
+[kmp-app-template](https://github.com/yossibank/kmp-app-template) ・ [ios-app-template](https://github.com/yossibank/ios-app-template)
 
 ## 構成
 
@@ -38,19 +50,15 @@ flowchart LR
 
 `:app` は画面、`:core` は画面をまたいで使う仕組みを持ちます。`:core` は純 JVM のモジュールで、共通コアにも Android にも依存しません。
 
-## 技術スタック
-
-| | |
-| --- | --- |
-| UI / 状態管理 | Jetpack Compose / ViewModel + StateFlow |
-| 並行性 | Kotlin Coroutines |
-| 画像 | Coil |
-| テスト | JUnit 4 + kotlinx-coroutines-test |
-| 依存管理 | Gradle（バージョンカタログ）。共通コアは GitHub Packages から取得 |
-
 ## 動かし方
 
-1. `~/.gradle/gradle.properties` に `gpr.user` / `gpr.token` を置く（GitHub Packages から共通コアを取得するのに必要）
-2. Android Studio で開くか、`make build` でビルドする
+> [!NOTE]
+> 共通コアを GitHub Packages から取得するため、`~/.gradle/gradle.properties` に `gpr.user` / `gpr.token` が必要です。
 
-変更したら `make verify` を通します。
+<details>
+<summary>手順</summary>
+
+1. Android Studio で開くか、`make build` でビルドする
+2. 変更したら `make verify` を通す
+
+</details>
