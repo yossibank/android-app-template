@@ -1,9 +1,9 @@
-package com.yossibank.androidapptemplate.style
+package com.yossibank.androidapptemplate.feature.home.style
 
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
-import com.yossibank.androidapptemplate.R
-import com.yossibank.shared.PokemonStatKind
+import com.yossibank.androidapptemplate.feature.home.R
+import com.yossibank.shared.pokemon.PokemonStatKind
 
 @get:StringRes
 val PokemonStatKind.labelRes: Int

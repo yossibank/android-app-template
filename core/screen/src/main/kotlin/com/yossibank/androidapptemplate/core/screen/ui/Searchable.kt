@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.ui
+package com.yossibank.androidapptemplate.core.screen.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,14 +8,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.yossibank.androidapptemplate.R
 
 @Composable
 fun Searchable(
     query: String,
     onQueryChange: (String) -> Unit,
+    placeholder: String,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -23,7 +22,7 @@ fun Searchable(
         OutlinedTextField(
             value = query,
             onValueChange = onQueryChange,
-            placeholder = { Text(text = stringResource(R.string.pokemon_list_search_hint)) },
+            placeholder = { Text(text = placeholder) },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()

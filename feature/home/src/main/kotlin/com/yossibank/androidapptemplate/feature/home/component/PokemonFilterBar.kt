@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.component
+package com.yossibank.androidapptemplate.feature.home.component
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.yossibank.androidapptemplate.R
-import com.yossibank.androidapptemplate.style.badgeColor
-import com.yossibank.androidapptemplate.style.labelRes
-import com.yossibank.shared.PokemonTypeKind
+import com.yossibank.androidapptemplate.feature.home.R
+import com.yossibank.androidapptemplate.feature.home.style.badgeColor
+import com.yossibank.androidapptemplate.feature.home.style.labelRes
+import com.yossibank.shared.pokemon.PokemonTypeKind
 
 @Composable
 fun PokemonFilterBar(

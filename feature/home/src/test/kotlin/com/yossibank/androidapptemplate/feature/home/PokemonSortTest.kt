@@ -1,9 +1,9 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.feature.home
 
-import com.yossibank.shared.PokemonEntry
-import com.yossibank.shared.PokemonEntryDetail
-import com.yossibank.shared.PokemonFailure
-import com.yossibank.shared.PokemonTypeKind
+import com.yossibank.shared.core.ApiFailure
+import com.yossibank.shared.pokemon.PokemonEntry
+import com.yossibank.shared.pokemon.PokemonEntryDetail
+import com.yossibank.shared.pokemon.PokemonTypeKind
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -25,7 +25,7 @@ class PokemonSortTest {
     @Test
     fun `詳細を取れていない行の型は集めない`() {
         val pokemon = listOf(
-            PokemonEntry(132, "ditto", PokemonEntryDetail.Missing(PokemonFailure.Offline)),
+            PokemonEntry(132, "ditto", PokemonEntryDetail.Missing(ApiFailure.Offline)),
         )
 
         assertEquals(emptyList<PokemonTypeKind>(), pokemon.availableTypes())

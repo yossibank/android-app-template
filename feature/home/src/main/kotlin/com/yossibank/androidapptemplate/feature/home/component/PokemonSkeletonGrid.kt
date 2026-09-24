@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.component
+package com.yossibank.androidapptemplate.feature.home.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -21,12 +21,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.yossibank.androidapptemplate.style.CARD_CONTENT_PADDING
-import com.yossibank.androidapptemplate.style.CARD_SHAPE
-import com.yossibank.androidapptemplate.style.GRID_ARRANGEMENT
-import com.yossibank.androidapptemplate.style.GRID_COLUMNS
-import com.yossibank.androidapptemplate.style.GRID_CONTENT_PADDING
-import com.yossibank.androidapptemplate.style.SKELETON_COUNT
+import com.yossibank.androidapptemplate.feature.home.style.CARD_CONTENT_PADDING
+import com.yossibank.androidapptemplate.feature.home.style.CARD_SHAPE
+import com.yossibank.androidapptemplate.feature.home.style.GRID_ARRANGEMENT
+import com.yossibank.androidapptemplate.feature.home.style.GRID_COLUMNS
+import com.yossibank.androidapptemplate.feature.home.style.GRID_CONTENT_PADDING
+import com.yossibank.androidapptemplate.feature.home.style.SKELETON_COUNT
 
 @Composable
 fun PokemonSkeletonGrid() {

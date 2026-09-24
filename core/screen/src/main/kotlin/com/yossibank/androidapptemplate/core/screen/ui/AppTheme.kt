@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.core.screen.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

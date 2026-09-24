@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.component
+package com.yossibank.androidapptemplate.feature.home.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,12 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.yossibank.androidapptemplate.R
-import com.yossibank.androidapptemplate.loadedDetail
-import com.yossibank.androidapptemplate.style.CARD_CONTENT_PADDING
-import com.yossibank.androidapptemplate.style.CARD_SHAPE
-import com.yossibank.androidapptemplate.style.accentColor
-import com.yossibank.shared.PokemonEntry
+import com.yossibank.androidapptemplate.feature.home.R
+import com.yossibank.androidapptemplate.feature.home.loadedDetail
+import com.yossibank.androidapptemplate.feature.home.style.CARD_CONTENT_PADDING
+import com.yossibank.androidapptemplate.feature.home.style.CARD_SHAPE
+import com.yossibank.androidapptemplate.feature.home.style.accentColor
+import com.yossibank.shared.pokemon.PokemonEntry
 
 @Composable
 fun PokemonCard(

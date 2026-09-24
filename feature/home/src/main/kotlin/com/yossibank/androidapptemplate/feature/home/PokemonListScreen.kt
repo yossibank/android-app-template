@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.feature.home
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,21 +30,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.yossibank.androidapptemplate.component.PokemonCard
-import com.yossibank.androidapptemplate.component.PokemonDetailSheet
-import com.yossibank.androidapptemplate.component.PokemonFilterBar
-import com.yossibank.androidapptemplate.component.PokemonListToolbar
-import com.yossibank.androidapptemplate.component.PokemonNoMatch
-import com.yossibank.androidapptemplate.component.PokemonSkeletonGrid
-import com.yossibank.androidapptemplate.style.GRID_ARRANGEMENT
-import com.yossibank.androidapptemplate.style.GRID_COLUMNS
-import com.yossibank.androidapptemplate.style.GRID_CONTENT_PADDING
-import com.yossibank.androidapptemplate.ui.Banner
-import com.yossibank.androidapptemplate.ui.Message
-import com.yossibank.androidapptemplate.ui.Searchable
-import com.yossibank.shared.PokemonEntry
-import com.yossibank.shared.PokemonPager
-import com.yossibank.shared.PokemonTypeKind
+import com.yossibank.androidapptemplate.core.screen.ui.Banner
+import com.yossibank.androidapptemplate.core.screen.ui.Message
+import com.yossibank.androidapptemplate.core.screen.ui.Searchable
+import com.yossibank.androidapptemplate.feature.home.component.PokemonCard
+import com.yossibank.androidapptemplate.feature.home.component.PokemonDetailSheet
+import com.yossibank.androidapptemplate.feature.home.component.PokemonFilterBar
+import com.yossibank.androidapptemplate.feature.home.component.PokemonListToolbar
+import com.yossibank.androidapptemplate.feature.home.component.PokemonNoMatch
+import com.yossibank.androidapptemplate.feature.home.component.PokemonSkeletonGrid
+import com.yossibank.androidapptemplate.feature.home.style.GRID_ARRANGEMENT
+import com.yossibank.androidapptemplate.feature.home.style.GRID_COLUMNS
+import com.yossibank.androidapptemplate.feature.home.style.GRID_CONTENT_PADDING
+import com.yossibank.shared.pokemon.PokemonEntry
+import com.yossibank.shared.pokemon.PokemonTypeKind
+
+private const val PREFETCH_DISTANCE = 8
 
 @Composable
 fun PokemonListScreen(
@@ -136,14 +137,16 @@ fun PokemonList(
     onOpen: (PokemonEntry) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val searchHint = stringResource(R.string.pokemon_list_search_hint)
+
     when (uiState) {
         PokemonListUiState.Loading ->
-            Searchable(query = query, onQueryChange = onQueryChange, modifier = modifier) {
+            Searchable(query = query, onQueryChange = onQueryChange, placeholder = searchHint, modifier = modifier) {
                 PokemonSkeletonGrid()
             }
 
         PokemonListUiState.Empty ->
-            Searchable(query = query, onQueryChange = onQueryChange, modifier = modifier) {
+            Searchable(query = query, onQueryChange = onQueryChange, placeholder = searchHint, modifier = modifier) {
                 Message(
                     text = stringResource(R.string.pokemon_list_empty_title),
                     description = stringResource(R.string.pokemon_list_empty_description),
@@ -155,7 +158,7 @@ fun PokemonList(
             val filtered = uiState.pokemon.filtered(query, selectedType, sort)
             val isFiltering = query.isNotEmpty() || selectedType != null
 
-            Searchable(query = query, onQueryChange = onQueryChange, modifier = modifier) {
+            Searchable(query = query, onQueryChange = onQueryChange, placeholder = searchHint, modifier = modifier) {
                 PokemonListToolbar(
                     shown = filtered.size,
                     loaded = uiState.pokemon.size,
@@ -219,7 +222,7 @@ fun LoadedGrid(
                     .lastOrNull()
                     ?.index
             }.collect { lastVisible ->
-                val threshold = uiState.pokemon.size - PokemonPager.PREFETCH_DISTANCE
+                val threshold = uiState.pokemon.size - PREFETCH_DISTANCE
 
                 if (lastVisible != null && lastVisible >= threshold) {
                     onLoadMore()

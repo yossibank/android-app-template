@@ -1,7 +1,7 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.feature.home
 
 import androidx.annotation.StringRes
-import com.yossibank.shared.PokemonEntry
+import com.yossibank.shared.pokemon.PokemonEntry
 
 sealed interface PokemonListUiState {
     data object Loading : PokemonListUiState

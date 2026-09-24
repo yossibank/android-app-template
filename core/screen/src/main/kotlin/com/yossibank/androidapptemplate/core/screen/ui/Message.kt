@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.ui
+package com.yossibank.androidapptemplate.core.screen.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.yossibank.androidapptemplate.R
+import com.yossibank.androidapptemplate.core.screen.R
 
 @Composable
 fun Message(
@@ -42,7 +42,7 @@ fun Message(
 
         if (onRetry != null) {
             TextButton(onClick = onRetry) {
-                Text(text = stringResource(R.string.action_reload))
+                Text(text = stringResource(R.string.screen_retry))
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.component
+package com.yossibank.androidapptemplate.feature.home.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -11,10 +11,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.yossibank.androidapptemplate.style.badgeColor
-import com.yossibank.androidapptemplate.style.labelRes
-import com.yossibank.androidapptemplate.style.onBadgeColor
-import com.yossibank.shared.PokemonTypeKind
+import com.yossibank.androidapptemplate.feature.home.style.badgeColor
+import com.yossibank.androidapptemplate.feature.home.style.labelRes
+import com.yossibank.androidapptemplate.feature.home.style.onBadgeColor
+import com.yossibank.shared.pokemon.PokemonTypeKind
 
 @Composable
 fun PokemonTypeBadge(type: PokemonTypeKind) {

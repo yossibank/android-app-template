@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.component
+package com.yossibank.androidapptemplate.feature.home.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.yossibank.shared.PokemonEntryDetail
+import com.yossibank.shared.pokemon.PokemonEntryDetail
 
 @Composable
 fun PokemonArtwork(

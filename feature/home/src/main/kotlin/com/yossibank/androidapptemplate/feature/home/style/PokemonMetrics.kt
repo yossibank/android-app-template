@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.style
+package com.yossibank.androidapptemplate.feature.home.style
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues

@@ -1,10 +1,10 @@
-package com.yossibank.androidapptemplate.component
+package com.yossibank.androidapptemplate.feature.home.component
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import com.yossibank.androidapptemplate.R
-import com.yossibank.androidapptemplate.ui.Message
-import com.yossibank.shared.PokemonTypeKind
+import com.yossibank.androidapptemplate.core.screen.ui.Message
+import com.yossibank.androidapptemplate.feature.home.R
+import com.yossibank.shared.pokemon.PokemonTypeKind
 
 @Composable
 fun PokemonNoMatch(

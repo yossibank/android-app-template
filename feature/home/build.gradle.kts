@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.yossibank.androidapptemplate.core.screen"
+    namespace = "com.yossibank.androidapptemplate.feature.home"
     compileSdk = libs.versions.android.compileSdk
         .get()
         .toInt()
@@ -27,10 +27,15 @@ android {
 }
 
 dependencies {
-    api(libs.kotlinx.coroutines.core)
+    implementation(project(":core:screen"))
+    implementation(libs.shared)
+
+    implementation(libs.bundles.lifecycle)
 
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.bundles.coil)
     implementation(libs.bundles.compose)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.bundles.test)
 }

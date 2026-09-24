@@ -1,7 +1,7 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.feature.home
 
-import com.yossibank.shared.PokemonListResult
-import com.yossibank.shared.PokemonPager
+import com.yossibank.shared.pokemon.PokemonListResult
+import com.yossibank.shared.pokemon.PokemonPager
 
 interface PokemonPaging {
     suspend fun loadNext(): PokemonListResult

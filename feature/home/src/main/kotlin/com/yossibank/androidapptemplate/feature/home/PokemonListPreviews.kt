@@ -1,13 +1,14 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.feature.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.yossibank.shared.PokemonBaseStat
-import com.yossibank.shared.PokemonEntry
-import com.yossibank.shared.PokemonEntryDetail
-import com.yossibank.shared.PokemonFailure
-import com.yossibank.shared.PokemonStatKind
-import com.yossibank.shared.PokemonTypeKind
+import com.yossibank.androidapptemplate.core.screen.ui.AppTheme
+import com.yossibank.shared.core.ApiFailure
+import com.yossibank.shared.pokemon.PokemonBaseStat
+import com.yossibank.shared.pokemon.PokemonEntry
+import com.yossibank.shared.pokemon.PokemonEntryDetail
+import com.yossibank.shared.pokemon.PokemonStatKind
+import com.yossibank.shared.pokemon.PokemonTypeKind
 
 private fun sample(
     id: Int,
@@ -61,7 +62,7 @@ fun PokemonListDegradedPreview() {
                 PokemonEntry(
                     id = 132,
                     name = "ditto",
-                    detail = PokemonEntryDetail.Missing(PokemonFailure.Server(statusCode = 500)),
+                    detail = PokemonEntryDetail.Missing(ApiFailure.Server(statusCode = 500)),
                 ),
             ) + SAMPLE,
             hasMore = false,

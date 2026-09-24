@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.component
+package com.yossibank.androidapptemplate.feature.home.component
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -18,8 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.yossibank.androidapptemplate.PokemonSort
-import com.yossibank.androidapptemplate.R
+import com.yossibank.androidapptemplate.feature.home.PokemonSort
+import com.yossibank.androidapptemplate.feature.home.R
 
 @Composable
 fun PokemonListToolbar(

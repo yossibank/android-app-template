@@ -1,4 +1,8 @@
 [versions]
+android-compileSdk = "37"
+android-minSdk = "24"
+android-targetSdk = "37"
+
 agp = "9.4.1"
 kotlin = "2.4.20"
 ktlint = "14.2.0"
@@ -60,6 +64,6 @@ test = [
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }

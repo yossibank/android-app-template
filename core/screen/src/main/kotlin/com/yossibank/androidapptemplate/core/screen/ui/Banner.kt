@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.ui
+package com.yossibank.androidapptemplate.core.screen.ui
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.yossibank.androidapptemplate.R
+import com.yossibank.androidapptemplate.core.screen.R
 
 @Composable
 fun Banner(
@@ -22,7 +22,7 @@ fun Banner(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     busy: Boolean = false,
-    actionRes: Int = R.string.action_reload,
+    actionRes: Int = R.string.screen_retry,
     onRetry: (() -> Unit)? = null,
 ) {
     Row(

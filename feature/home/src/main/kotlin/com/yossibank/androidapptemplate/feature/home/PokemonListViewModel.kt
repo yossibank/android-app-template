@@ -1,11 +1,11 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yossibank.androidapptemplate.core.LatestResult
-import com.yossibank.shared.PokemonEntry
-import com.yossibank.shared.PokemonFailure
-import com.yossibank.shared.PokemonListResult
+import com.yossibank.androidapptemplate.core.screen.LatestResult
+import com.yossibank.shared.core.ApiFailure
+import com.yossibank.shared.pokemon.PokemonEntry
+import com.yossibank.shared.pokemon.PokemonListResult
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -125,10 +125,10 @@ class PokemonListViewModel(
     }
 }
 
-private fun PokemonFailure.toErrorMessage(): ErrorMessage = when (this) {
-    is PokemonFailure.Offline -> ErrorMessage(R.string.error_offline, canRetry)
-    is PokemonFailure.Timeout -> ErrorMessage(R.string.error_timeout, canRetry)
-    is PokemonFailure.Server -> ErrorMessage(R.string.error_server, canRetry, listOf(statusCode))
-    is PokemonFailure.Unexpected -> ErrorMessage(R.string.error_unreadable, canRetry)
-    is PokemonFailure.Closed -> ErrorMessage(R.string.error_unexpected, canRetry)
+private fun ApiFailure.toErrorMessage(): ErrorMessage = when (this) {
+    is ApiFailure.Offline -> ErrorMessage(R.string.error_offline, canRetry)
+    is ApiFailure.Timeout -> ErrorMessage(R.string.error_timeout, canRetry)
+    is ApiFailure.Server -> ErrorMessage(R.string.error_server, canRetry, listOf(statusCode))
+    is ApiFailure.Unreadable -> ErrorMessage(R.string.error_unreadable, canRetry)
+    is ApiFailure.Closed -> ErrorMessage(R.string.error_unexpected, canRetry)
 }

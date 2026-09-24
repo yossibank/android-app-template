@@ -1,10 +1,10 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.feature.home
 
 import androidx.annotation.StringRes
-import com.yossibank.androidapptemplate.core.standardContains
-import com.yossibank.shared.PokemonEntry
-import com.yossibank.shared.PokemonEntryDetail
-import com.yossibank.shared.PokemonTypeKind
+import com.yossibank.androidapptemplate.core.screen.standardContains
+import com.yossibank.shared.pokemon.PokemonEntry
+import com.yossibank.shared.pokemon.PokemonEntryDetail
+import com.yossibank.shared.pokemon.PokemonTypeKind
 
 enum class PokemonSort(
     @param:StringRes val labelRes: Int,

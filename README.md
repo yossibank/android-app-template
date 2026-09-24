@@ -38,23 +38,24 @@ flowchart LR
 
 [kmp-app-template](https://github.com/yossibank/kmp-app-template) ・ [ios-app-template](https://github.com/yossibank/ios-app-template)
 
-## 構成
+## モジュール構成
 
 ```mermaid
 flowchart LR
     SHARED["shared<br/><i>共通コア</i>"]
-    CORE[":core<br/><i>画面をまたぐ仕組み</i>"]
-    VM["PokemonListViewModel"]
-    SCREEN["PokemonListScreen"]
-    SHARED --> VM
-    CORE --> VM
-    VM -->|"StateFlow&lt;PokemonListUiState&gt;"| SCREEN
+    SCREEN[":core:screen"]
+    HOME[":feature:home"]
+    APP[":app"]
+    SHARED --> HOME
+    SCREEN --> HOME
+    HOME --> APP
 ```
 
 | モジュール | 役割 |
 | --- | --- |
-| `:app` | 画面 |
-| `:core` | 画面をまたいで使う仕組み。純 JVM のモジュールで、共通コアにも Android にも依存しない |
+| `:core:screen` | 画面の土台（読み込み状態の管理）と、機能に依らない UI 部品 |
+| `:feature:home` | 一覧と詳細の画面 |
+| `:app` | 画面の組み立て |
 
 ## 動かし方
 

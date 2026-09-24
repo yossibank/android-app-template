@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.core
+package com.yossibank.androidapptemplate.core.screen
 
 import java.text.Normalizer
 import java.util.Locale

@@ -45,4 +45,5 @@ providers
 
 rootProject.name = "android-app-template"
 include(":app")
-include(":core")
+include(":core:screen")
+include(":feature:home")

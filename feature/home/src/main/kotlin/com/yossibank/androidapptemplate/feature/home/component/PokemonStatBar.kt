@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.component
+package com.yossibank.androidapptemplate.feature.home.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
@@ -13,9 +13,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.yossibank.androidapptemplate.R
-import com.yossibank.androidapptemplate.style.MAX_TOTAL_BASE_STAT
-import com.yossibank.androidapptemplate.ui.CapsuleMeter
+import com.yossibank.androidapptemplate.core.screen.ui.CapsuleMeter
+import com.yossibank.androidapptemplate.feature.home.R
+import com.yossibank.androidapptemplate.feature.home.style.MAX_TOTAL_BASE_STAT
 
 @Composable
 fun PokemonStatBar(

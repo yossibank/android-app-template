@@ -1,13 +1,13 @@
-package com.yossibank.androidapptemplate.style
+package com.yossibank.androidapptemplate.feature.home.style
 
 import androidx.annotation.StringRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import com.yossibank.androidapptemplate.R
-import com.yossibank.shared.PokemonEntryDetail
-import com.yossibank.shared.PokemonTypeKind
+import com.yossibank.androidapptemplate.feature.home.R
+import com.yossibank.shared.pokemon.PokemonEntryDetail
+import com.yossibank.shared.pokemon.PokemonTypeKind
 
 @get:StringRes
 val PokemonTypeKind.labelRes: Int

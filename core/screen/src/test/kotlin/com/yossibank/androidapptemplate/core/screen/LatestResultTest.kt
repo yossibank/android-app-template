@@ -1,4 +1,4 @@
-package com.yossibank.androidapptemplate.core
+package com.yossibank.androidapptemplate.core.screen
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay

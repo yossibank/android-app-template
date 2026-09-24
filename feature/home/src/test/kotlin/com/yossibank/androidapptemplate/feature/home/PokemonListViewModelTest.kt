@@ -1,13 +1,13 @@
-package com.yossibank.androidapptemplate
+package com.yossibank.androidapptemplate.feature.home
 
 import androidx.lifecycle.ViewModelStore
-import com.yossibank.shared.PokemonBaseStat
-import com.yossibank.shared.PokemonEntry
-import com.yossibank.shared.PokemonEntryDetail
-import com.yossibank.shared.PokemonFailure
-import com.yossibank.shared.PokemonListResult
-import com.yossibank.shared.PokemonStatKind
-import com.yossibank.shared.PokemonTypeKind
+import com.yossibank.shared.core.ApiFailure
+import com.yossibank.shared.pokemon.PokemonBaseStat
+import com.yossibank.shared.pokemon.PokemonEntry
+import com.yossibank.shared.pokemon.PokemonEntryDetail
+import com.yossibank.shared.pokemon.PokemonListResult
+import com.yossibank.shared.pokemon.PokemonStatKind
+import com.yossibank.shared.pokemon.PokemonTypeKind
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -74,7 +74,7 @@ private fun entries(
                 baseStats = listOf(PokemonBaseStat(PokemonStatKind.HP, 45)),
             )
         } else {
-            PokemonEntryDetail.Missing(PokemonFailure.Server(statusCode = 500))
+            PokemonEntryDetail.Missing(ApiFailure.Server(statusCode = 500))
         },
     )
 }
@@ -90,7 +90,7 @@ private fun loaded(
 )
 
 private fun degraded(
-    failure: PokemonFailure,
+    failure: ApiFailure,
     vararg names: String,
 ) = PokemonListResult.Loaded(
     pokemon = entries(names),
@@ -99,7 +99,7 @@ private fun degraded(
     failure = failure,
 )
 
-private fun failed(failure: PokemonFailure) = PokemonListResult.Failed(failure = failure)
+private fun failed(failure: ApiFailure) = PokemonListResult.Failed(failure = failure)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PokemonListViewModelTest {
@@ -167,7 +167,7 @@ class PokemonListViewModelTest {
     @Test
     fun `追加取得が失敗しても読み込めた分は残る`() = runTest(dispatcher) {
         val model = viewModel { index ->
-            if (index == 0) loaded("a", hasMore = true) else degraded(PokemonFailure.Offline, "a")
+            if (index == 0) loaded("a", hasMore = true) else degraded(ApiFailure.Offline, "a")
         }
         advanceUntilIdle()
 
@@ -180,7 +180,7 @@ class PokemonListViewModelTest {
     @Test
     fun `追加取得の失敗は知らせに出る`() = runTest(dispatcher) {
         val model = viewModel { index ->
-            if (index == 0) loaded("a", hasMore = true) else degraded(PokemonFailure.Offline, "a")
+            if (index == 0) loaded("a", hasMore = true) else degraded(ApiFailure.Offline, "a")
         }
         advanceUntilIdle()
 
@@ -196,7 +196,7 @@ class PokemonListViewModelTest {
     fun `詳細の取り直しの失敗は取り直しとして知らせに出る`() = runTest(dispatcher) {
         val stub = StubPaging(
             page = { loaded("a", "b", hasDetail = false) },
-            repair = { degraded(PokemonFailure.Offline, "a", "b") },
+            repair = { degraded(ApiFailure.Offline, "a", "b") },
         )
         val model = PokemonListViewModel(stub)
         advanceUntilIdle()
@@ -242,7 +242,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `接続できないときは再試行できる失敗になる`() = runTest(dispatcher) {
-        val model = viewModel { failed(PokemonFailure.Offline) }
+        val model = viewModel { failed(ApiFailure.Offline) }
 
         advanceUntilIdle()
 
@@ -251,7 +251,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `応答が遅いときは接続断とは別の文言になる`() = runTest(dispatcher) {
-        val model = viewModel { failed(PokemonFailure.Timeout) }
+        val model = viewModel { failed(ApiFailure.Timeout) }
 
         advanceUntilIdle()
 
@@ -262,7 +262,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `サーバーエラーは状態コードを文言に含める`() = runTest(dispatcher) {
-        val model = viewModel { failed(PokemonFailure.Server(503)) }
+        val model = viewModel { failed(ApiFailure.Server(503)) }
 
         advanceUntilIdle()
 
@@ -273,7 +273,7 @@ class PokemonListViewModelTest {
 
     @Test
     fun `解釈できない応答は再試行できない失敗になる`() = runTest(dispatcher) {
-        val model = viewModel { failed(PokemonFailure.Unexpected) }
+        val model = viewModel { failed(ApiFailure.Unreadable) }
 
         advanceUntilIdle()
 
@@ -312,7 +312,7 @@ class PokemonListViewModelTest {
                     delay(1_000)
                     loaded("古い")
                 } catch (e: Exception) {
-                    failed(PokemonFailure.Unexpected)
+                    failed(ApiFailure.Unreadable)
                 }
             } else {
                 loaded("新しい")
