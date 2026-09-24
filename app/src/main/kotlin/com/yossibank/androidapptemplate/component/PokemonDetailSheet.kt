@@ -2,16 +2,13 @@ package com.yossibank.androidapptemplate.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -19,24 +16,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.yossibank.androidapptemplate.R
+import com.yossibank.androidapptemplate.loadedDetail
 import com.yossibank.androidapptemplate.style.MAX_BASE_STAT
-import com.yossibank.androidapptemplate.style.badgeColor
+import com.yossibank.androidapptemplate.style.accentColor
 import com.yossibank.androidapptemplate.style.barColor
 import com.yossibank.androidapptemplate.style.labelRes
+import com.yossibank.androidapptemplate.ui.CapsuleMeter
 import com.yossibank.shared.PokemonBaseStat
 import com.yossibank.shared.PokemonEntry
-import com.yossibank.shared.PokemonEntryDetail
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,8 +39,8 @@ fun PokemonDetailSheet(
     pokemon: PokemonEntry,
     onDismiss: () -> Unit,
 ) {
-    val detail = pokemon.detail as? PokemonEntryDetail.Loaded
-    val accent = detail?.types?.firstOrNull()?.badgeColor ?: MaterialTheme.colorScheme.outline
+    val detail = pokemon.loadedDetail
+    val accent = detail.accentColor
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -156,20 +151,12 @@ fun StatRow(stat: PokemonBaseStat) {
             modifier = Modifier.fillMaxWidth(0.14f),
         )
 
-        Box(
+        CapsuleMeter(
+            fraction = (stat.value / MAX_BASE_STAT).coerceIn(0.02f, 1f),
+            color = stat.kind.barColor,
             modifier = Modifier
                 .weight(1f)
-                .height(8.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth((stat.value / MAX_BASE_STAT).coerceIn(0.02f, 1f))
-                    .fillMaxHeight()
-                    .clip(CircleShape)
-                    .background(stat.kind.barColor),
-            )
-        }
+                .height(8.dp),
+        )
     }
 }

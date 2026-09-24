@@ -1,8 +1,7 @@
 package com.yossibank.androidapptemplate
 
 import androidx.annotation.StringRes
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import com.yossibank.androidapptemplate.core.standardContains
 import com.yossibank.shared.PokemonEntry
 import com.yossibank.shared.PokemonEntryDetail
 import com.yossibank.shared.PokemonTypeKind
@@ -14,20 +13,29 @@ enum class PokemonSort(
     NUMBER(R.string.pokemon_list_sort_number, compareBy { it.id }),
     TOTAL(
         R.string.pokemon_list_sort_total,
-        compareByDescending { (it.detail as? PokemonEntryDetail.Loaded)?.totalBaseStat ?: -1 },
+        compareByDescending { it.loadedDetail?.totalBaseStat ?: -1 },
     ),
     NAME(R.string.pokemon_list_sort_name, compareBy { it.name }),
 }
 
+val PokemonEntry.loadedDetail: PokemonEntryDetail.Loaded?
+    get() = detail as? PokemonEntryDetail.Loaded
+
 fun List<PokemonEntry>.availableTypes(): List<PokemonTypeKind> = asSequence()
-    .mapNotNull { it.detail as? PokemonEntryDetail.Loaded }
+    .mapNotNull { it.loadedDetail }
     .flatMap { it.types }
     .distinct()
     .sortedBy { it.ordinal }
     .toList()
 
+fun List<PokemonEntry>.filtered(
+    query: String,
+    type: PokemonTypeKind?,
+    sort: PokemonSort,
+): List<PokemonEntry> = filter { it.name.standardContains(query) && it.matches(type) }.sortedWith(sort.comparator)
+
 fun PokemonEntry.matches(type: PokemonTypeKind?): Boolean {
     if (type == null) return true
 
-    return (detail as? PokemonEntryDetail.Loaded)?.types?.contains(type) == true
+    return loadedDetail?.types?.contains(type) == true
 }

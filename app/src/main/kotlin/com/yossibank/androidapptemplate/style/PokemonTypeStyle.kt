@@ -1,9 +1,12 @@
 package com.yossibank.androidapptemplate.style
 
 import androidx.annotation.StringRes
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import com.yossibank.androidapptemplate.R
+import com.yossibank.shared.PokemonEntryDetail
 import com.yossibank.shared.PokemonTypeKind
 
 @get:StringRes
@@ -52,6 +55,9 @@ val PokemonTypeKind.badgeColor: Color
         PokemonTypeKind.FAIRY -> Color(0xFFEF70EF)
         PokemonTypeKind.UNKNOWN -> Color(0xFF68A090)
     }
+
+val PokemonEntryDetail.Loaded?.accentColor: Color
+    @Composable get() = this?.types?.firstOrNull()?.badgeColor ?: MaterialTheme.colorScheme.outline
 
 val PokemonTypeKind.onBadgeColor: Color
     get() = if (badgeColor.luminance() > 0.18f) Color(0xFF1A1A1A) else Color.White

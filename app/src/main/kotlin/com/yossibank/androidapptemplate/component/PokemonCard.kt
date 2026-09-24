@@ -10,14 +10,11 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -26,21 +23,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.yossibank.androidapptemplate.R
-import com.yossibank.androidapptemplate.style.badgeColor
+import com.yossibank.androidapptemplate.loadedDetail
+import com.yossibank.androidapptemplate.style.CARD_CONTENT_PADDING
+import com.yossibank.androidapptemplate.style.CARD_SHAPE
+import com.yossibank.androidapptemplate.style.accentColor
 import com.yossibank.shared.PokemonEntry
-import com.yossibank.shared.PokemonEntryDetail
 
 @Composable
 fun PokemonCard(
     pokemon: PokemonEntry,
     onClick: () -> Unit,
 ) {
-    val detail = pokemon.detail as? PokemonEntryDetail.Loaded
-    val accent = detail?.types?.firstOrNull()?.badgeColor ?: MaterialTheme.colorScheme.outline
+    val detail = pokemon.loadedDetail
+    val accent = detail.accentColor
 
     Card(
         onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
+        shape = CARD_SHAPE,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
@@ -62,7 +61,7 @@ fun PokemonCard(
                     .padding(horizontal = 6.dp),
             )
 
-            Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+            Column(modifier = Modifier.padding(CARD_CONTENT_PADDING)) {
                 Text(
                     text = stringResource(R.string.pokemon_list_number, pokemon.id),
                     style = MaterialTheme.typography.labelMedium,

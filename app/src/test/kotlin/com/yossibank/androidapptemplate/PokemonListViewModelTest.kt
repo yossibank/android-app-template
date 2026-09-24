@@ -229,7 +229,7 @@ class PokemonListViewModelTest {
 
         advanceUntilIdle()
 
-        assertTrue((model.uiState.value as PokemonListUiState.Failed).canRetry)
+        assertTrue((model.uiState.value as PokemonListUiState.Failed).error.canRetry)
     }
 
     @Test
@@ -238,7 +238,7 @@ class PokemonListViewModelTest {
 
         advanceUntilIdle()
 
-        val uiState = model.uiState.value as PokemonListUiState.Failed
+        val uiState = (model.uiState.value as PokemonListUiState.Failed).error
         assertEquals(R.string.error_timeout, uiState.messageRes)
         assertTrue(uiState.canRetry)
     }
@@ -249,7 +249,7 @@ class PokemonListViewModelTest {
 
         advanceUntilIdle()
 
-        val uiState = model.uiState.value as PokemonListUiState.Failed
+        val uiState = (model.uiState.value as PokemonListUiState.Failed).error
         assertEquals(R.string.error_server, uiState.messageRes)
         assertEquals(listOf(503), uiState.formatArgs)
     }
@@ -260,7 +260,7 @@ class PokemonListViewModelTest {
 
         advanceUntilIdle()
 
-        assertFalse((model.uiState.value as PokemonListUiState.Failed).canRetry)
+        assertFalse((model.uiState.value as PokemonListUiState.Failed).error.canRetry)
     }
 
     @Test
@@ -321,7 +321,7 @@ class PokemonListViewModelTest {
 
         advanceUntilIdle()
 
-        val failed = model.uiState.value as PokemonListUiState.Failed
+        val failed = (model.uiState.value as PokemonListUiState.Failed).error
 
         assertEquals(R.string.error_unexpected, failed.messageRes)
         assertTrue(failed.canRetry)
