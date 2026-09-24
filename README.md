@@ -63,3 +63,16 @@ flowchart LR
 
 1. Android Studio で開くか、`make build` でビルドする
 2. 変更したら `make verify` を通す
+
+<details>
+<summary>共通コアを手元のものに差し替える</summary>
+
+kmp-app-template のディレクトリを絶対パスで渡します。このときは `gpr.user` / `gpr.token` は要りません。
+
+```sh
+SHARED_DIR=/path/to/kmp-app-template make verify
+```
+
+Android Studio では `~/.gradle/gradle.properties` に `shared.dir=/path/to/kmp-app-template` を書きます。
+
+</details>
