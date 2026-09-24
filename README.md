@@ -51,17 +51,15 @@ flowchart LR
     VM -->|"StateFlow&lt;PokemonListUiState&gt;"| SCREEN
 ```
 
-`:app` は画面、`:core` は画面をまたいで使う仕組みを持ちます。`:core` は純 JVM のモジュールで、共通コアにも Android にも依存しません。
+| モジュール | 役割 |
+| --- | --- |
+| `:app` | 画面 |
+| `:core` | 画面をまたいで使う仕組み。純 JVM のモジュールで、共通コアにも Android にも依存しない |
 
 ## 動かし方
 
 > [!NOTE]
 > 共通コアを GitHub Packages から取得するため、`~/.gradle/gradle.properties` に `gpr.user` / `gpr.token` が必要です。
 
-<details>
-<summary>手順</summary>
-
 1. Android Studio で開くか、`make build` でビルドする
 2. 変更したら `make verify` を通す
-
-</details>
