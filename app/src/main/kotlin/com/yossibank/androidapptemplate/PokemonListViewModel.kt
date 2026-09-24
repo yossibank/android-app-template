@@ -77,15 +77,12 @@ class PokemonListViewModel(
     private suspend fun fetched(fetch: suspend () -> PokemonListResult): PokemonListUiState = try {
         when (val result = fetch()) {
             is PokemonListResult.Loaded ->
-                loaded(result.pokemon, result.hasMore, result.incompleteCount, result.total, notice = null)
-
-            is PokemonListResult.Degraded ->
                 loaded(
                     result.pokemon,
                     result.hasMore,
                     result.incompleteCount,
                     result.total,
-                    result.failure.toErrorMessage(),
+                    result.failure?.toErrorMessage(),
                 )
 
             is PokemonListResult.Failed ->

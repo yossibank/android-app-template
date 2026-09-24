@@ -18,8 +18,7 @@ private fun sample(
     id = id,
     name = name,
     detail = PokemonEntryDetail.Loaded(
-        spriteUrl = null,
-        artworkUrl = null,
+        imageUrl = null,
         types = types,
         baseStats = listOf(
             PokemonStatKind.HP,

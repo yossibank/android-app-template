@@ -28,10 +28,10 @@ fun PokemonArtwork(
     accent: Color,
     modifier: Modifier = Modifier,
 ) {
-    val large = detail?.artworkUrl ?: detail?.spriteUrl
+    val imageUrl = detail?.imageUrl
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        if (large == null) {
+        if (imageUrl == null) {
             Text(
                 text = fallback.take(1).uppercase(),
                 style = MaterialTheme.typography.displaySmall,
@@ -42,7 +42,7 @@ fun PokemonArtwork(
             SubcomposeAsyncImage(
                 model = ImageRequest
                     .Builder(LocalContext.current)
-                    .data(large)
+                    .data(imageUrl)
                     .crossfade(true)
                     .build(),
                 contentDescription = null,

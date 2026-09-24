@@ -69,8 +69,7 @@ private fun entries(
         name = name,
         detail = if (hasDetail) {
             PokemonEntryDetail.Loaded(
-                spriteUrl = "https://img.example/${index + 1}.png",
-                artworkUrl = "https://img.example/artwork/${index + 1}.png",
+                imageUrl = "https://img.example/artwork/${index + 1}.png",
                 types = listOf(PokemonTypeKind.GRASS),
                 baseStats = listOf(PokemonBaseStat(PokemonStatKind.HP, 45)),
             )
@@ -93,7 +92,7 @@ private fun loaded(
 private fun degraded(
     failure: PokemonFailure,
     vararg names: String,
-) = PokemonListResult.Degraded(
+) = PokemonListResult.Loaded(
     pokemon = entries(names),
     hasMore = true,
     total = 1351,
