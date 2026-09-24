@@ -1,8 +1,6 @@
 package com.yossibank.androidapptemplate.component
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.yossibank.androidapptemplate.R
 import com.yossibank.androidapptemplate.ui.Message

@@ -85,11 +85,11 @@ class PokemonListViewModel(
                     result.hasMore,
                     result.incompleteCount,
                     result.total,
-                    result.failure.toNotice(),
+                    result.failure.toErrorMessage(),
                 )
 
             is PokemonListResult.Failed ->
-                result.failure.toFailed()
+                PokemonListUiState.Failed(result.failure.toErrorMessage())
 
             PokemonListResult.Stale ->
                 settled(mutableUiState.value)
@@ -97,10 +97,7 @@ class PokemonListViewModel(
     } catch (e: CancellationException) {
         throw e
     } catch (_: Exception) {
-        PokemonListUiState.Failed(
-            messageRes = R.string.error_unexpected,
-            canRetry = true,
-        )
+        PokemonListUiState.Failed(ErrorMessage(R.string.error_unexpected, canRetry = true))
     }
 
     private fun settled(uiState: PokemonListUiState): PokemonListUiState = if (uiState is PokemonListUiState.Loaded) {
@@ -114,7 +111,7 @@ class PokemonListViewModel(
         hasMore: Boolean,
         incompleteCount: Int,
         total: Int,
-        notice: PokemonListUiState.Notice?,
+        notice: ErrorMessage?,
     ): PokemonListUiState = if (pokemon.isEmpty()) {
         PokemonListUiState.Empty
     } else {
@@ -128,23 +125,10 @@ class PokemonListViewModel(
     }
 }
 
-private fun PokemonFailure.toFailed(): PokemonListUiState.Failed = when (this) {
-    is PokemonFailure.Offline ->
-        PokemonListUiState.Failed(R.string.error_offline, canRetry)
-
-    is PokemonFailure.Timeout ->
-        PokemonListUiState.Failed(R.string.error_timeout, canRetry)
-
-    is PokemonFailure.Server ->
-        PokemonListUiState.Failed(R.string.error_server, canRetry, listOf(statusCode))
-
-    is PokemonFailure.Unexpected ->
-        PokemonListUiState.Failed(R.string.error_unreadable, canRetry)
-
-    is PokemonFailure.Closed ->
-        PokemonListUiState.Failed(R.string.error_unexpected, canRetry)
-}
-
-private fun PokemonFailure.toNotice(): PokemonListUiState.Notice = toFailed().let {
-    PokemonListUiState.Notice(it.messageRes, it.canRetry, it.formatArgs)
+private fun PokemonFailure.toErrorMessage(): ErrorMessage = when (this) {
+    is PokemonFailure.Offline -> ErrorMessage(R.string.error_offline, canRetry)
+    is PokemonFailure.Timeout -> ErrorMessage(R.string.error_timeout, canRetry)
+    is PokemonFailure.Server -> ErrorMessage(R.string.error_server, canRetry, listOf(statusCode))
+    is PokemonFailure.Unexpected -> ErrorMessage(R.string.error_unreadable, canRetry)
+    is PokemonFailure.Closed -> ErrorMessage(R.string.error_unexpected, canRetry)
 }

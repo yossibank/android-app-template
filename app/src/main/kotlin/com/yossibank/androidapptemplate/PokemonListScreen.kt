@@ -1,13 +1,10 @@
 package com.yossibank.androidapptemplate
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -39,7 +36,9 @@ import com.yossibank.androidapptemplate.component.PokemonFilterBar
 import com.yossibank.androidapptemplate.component.PokemonListToolbar
 import com.yossibank.androidapptemplate.component.PokemonNoMatch
 import com.yossibank.androidapptemplate.component.PokemonSkeletonGrid
-import com.yossibank.androidapptemplate.core.standardContains
+import com.yossibank.androidapptemplate.style.GRID_ARRANGEMENT
+import com.yossibank.androidapptemplate.style.GRID_COLUMNS
+import com.yossibank.androidapptemplate.style.GRID_CONTENT_PADDING
 import com.yossibank.androidapptemplate.ui.Banner
 import com.yossibank.androidapptemplate.ui.Message
 import com.yossibank.androidapptemplate.ui.Searchable
@@ -152,13 +151,16 @@ fun PokemonList(
                 )
             }
 
-        is PokemonListUiState.Loaded ->
+        is PokemonListUiState.Loaded -> {
+            val filtered = uiState.pokemon.filtered(query, selectedType, sort)
+            val isFiltering = query.isNotEmpty() || selectedType != null
+
             Searchable(query = query, onQueryChange = onQueryChange, modifier = modifier) {
                 PokemonListToolbar(
-                    shown = uiState.pokemon.count { it.name.standardContains(query) && it.matches(selectedType) },
+                    shown = filtered.size,
                     loaded = uiState.pokemon.size,
                     total = uiState.total,
-                    filtering = query.isNotEmpty() || selectedType != null,
+                    filtering = isFiltering,
                     sort = sort,
                     onSortChange = onSortChange,
                 )
@@ -171,10 +173,10 @@ fun PokemonList(
 
                 LoadedGrid(
                     uiState = uiState,
+                    filtered = filtered,
+                    isFiltering = isFiltering,
                     query = query,
                     selectedType = selectedType,
-                    sort = sort,
-                    onSortChange = onSortChange,
                     onLoadMore = onLoadMore,
                     onRetry = onRetry,
                     onRetryDetails = onRetryDetails,
@@ -182,12 +184,13 @@ fun PokemonList(
                     onOpen = onOpen,
                 )
             }
+        }
 
         is PokemonListUiState.Failed ->
             Message(
-                text = stringResource(uiState.messageRes, *uiState.formatArgs.toTypedArray()),
+                text = uiState.error.text,
                 color = MaterialTheme.colorScheme.error,
-                onRetry = onRetry.takeIf { uiState.canRetry },
+                onRetry = onRetry.takeIf { uiState.error.canRetry },
                 modifier = modifier,
             )
     }
@@ -197,22 +200,17 @@ fun PokemonList(
 @Composable
 fun LoadedGrid(
     uiState: PokemonListUiState.Loaded,
+    filtered: List<PokemonEntry>,
+    isFiltering: Boolean,
     query: String,
     selectedType: PokemonTypeKind?,
-    sort: PokemonSort,
-    onSortChange: (PokemonSort) -> Unit,
     onLoadMore: () -> Unit,
     onRetry: () -> Unit,
     onRetryDetails: () -> Unit,
     onRefresh: () -> Unit,
     onOpen: (PokemonEntry) -> Unit,
 ) {
-    val filtered = uiState.pokemon
-        .filter { pokemon -> pokemon.name.standardContains(query) && pokemon.matches(selectedType) }
-        .sortedWith(sort.comparator)
-
     val gridState = rememberLazyGridState()
-    val isFiltering = query.isNotEmpty() || selectedType != null
 
     if (!isFiltering && uiState.hasMore && uiState.notice == null) {
         LaunchedEffect(gridState, uiState.pokemon.size) {
@@ -241,12 +239,12 @@ fun LoadedGrid(
         }
 
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+            columns = GRID_COLUMNS,
             state = gridState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = GRID_CONTENT_PADDING,
+            horizontalArrangement = GRID_ARRANGEMENT,
+            verticalArrangement = GRID_ARRANGEMENT,
         ) {
             if (uiState.incompleteCount > 0) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
@@ -266,7 +264,7 @@ fun LoadedGrid(
             uiState.notice?.let { notice ->
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Banner(
-                        text = stringResource(notice.messageRes, *notice.formatArgs.toTypedArray()),
+                        text = notice.text,
                         color = MaterialTheme.colorScheme.error,
                         onRetry = if (notice.canRetry) onLoadMore else onRetry,
                     )
