@@ -3,8 +3,6 @@ package com.yossibank.androidapptemplate.core.screen.ui
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,7 +19,6 @@ fun Banner(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    busy: Boolean = false,
     actionRes: Int = R.string.screen_retry,
     onRetry: (() -> Unit)? = null,
 ) {
@@ -38,9 +35,7 @@ fun Banner(
             modifier = Modifier.weight(1f),
         )
 
-        if (busy) {
-            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-        } else if (onRetry != null) {
+        if (onRetry != null) {
             TextButton(onClick = onRetry) {
                 Text(text = stringResource(actionRes))
             }

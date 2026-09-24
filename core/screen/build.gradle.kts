@@ -28,6 +28,8 @@ android {
 
 dependencies {
     api(libs.kotlinx.coroutines.core)
+    api(libs.shared)
+    api(libs.bundles.lifecycle)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)

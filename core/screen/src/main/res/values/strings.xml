@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="screen_retry">再取得</string>
+    <string name="screen_load_failed">読み込めませんでした</string>
+    <string name="screen_offline">接続を確認してください</string>
+    <string name="screen_timeout">時間内に応答がありませんでした</string>
+    <string name="screen_unreadable">データを読み取れませんでした</string>
+    <string name="screen_unexpected">予期しないエラーが発生しました</string>
+    <string name="screen_server_error">サーバーが応答しませんでした（%1$d）</string>
 </resources>

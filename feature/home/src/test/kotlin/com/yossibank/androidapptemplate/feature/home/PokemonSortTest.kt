@@ -1,46 +1,45 @@
 package com.yossibank.androidapptemplate.feature.home
 
-import com.yossibank.shared.core.ApiFailure
 import com.yossibank.shared.pokemon.PokemonEntry
-import com.yossibank.shared.pokemon.PokemonEntryDetail
-import com.yossibank.shared.pokemon.PokemonTypeKind
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class PokemonSortTest {
     @Test
-    fun `出てきた型を重複なく、出てきた順に集める`() {
-        val pokemon = listOf(
-            entry(1, PokemonTypeKind.GRASS, PokemonTypeKind.POISON),
-            entry(2, PokemonTypeKind.GRASS, PokemonTypeKind.POISON),
-            entry(4, PokemonTypeKind.FIRE),
-        )
+    fun `名前で絞り込む`() {
+        val pokemon = listOf(entry(1, "bulbasaur"), entry(4, "charmander"))
 
-        assertEquals(
-            listOf(PokemonTypeKind.GRASS, PokemonTypeKind.POISON, PokemonTypeKind.FIRE),
-            pokemon.availableTypes(),
-        )
+        assertEquals(listOf("charmander"), pokemon.filtered("char", PokemonSort.NUMBER).map { it.name })
     }
 
     @Test
-    fun `詳細を取れていない行の型は集めない`() {
-        val pokemon = listOf(
-            PokemonEntry(132, "ditto", PokemonEntryDetail.Missing(ApiFailure.Offline)),
-        )
+    fun `名前の絞り込みは大文字小文字を区別しない`() {
+        assertEquals(1, listOf(entry(1, "bulbasaur")).filtered("BULBA", PokemonSort.NUMBER).size)
+    }
 
-        assertEquals(emptyList<PokemonTypeKind>(), pokemon.availableTypes())
+    @Test
+    fun `絞り込んでいなければすべて残る`() {
+        val pokemon = listOf(entry(1, "bulbasaur"), entry(4, "charmander"))
+
+        assertEquals(2, pokemon.filtered("", PokemonSort.NUMBER).size)
+    }
+
+    @Test
+    fun `番号の小さい順に並べる`() {
+        val pokemon = listOf(entry(25, "pikachu"), entry(1, "bulbasaur"))
+
+        assertEquals(listOf(1, 25), pokemon.filtered("", PokemonSort.NUMBER).map { it.id })
+    }
+
+    @Test
+    fun `名前順に並べる`() {
+        val pokemon = listOf(entry(7, "squirtle"), entry(1, "bulbasaur"))
+
+        assertEquals(listOf("bulbasaur", "squirtle"), pokemon.filtered("", PokemonSort.NAME).map { it.name })
     }
 
     private fun entry(
         id: Int,
-        vararg types: PokemonTypeKind,
-    ) = PokemonEntry(
-        id = id,
-        name = "p$id",
-        detail = PokemonEntryDetail.Loaded(
-            imageUrl = null,
-            types = types.toList(),
-            baseStats = emptyList(),
-        ),
-    )
+        name: String,
+    ) = PokemonEntry(id = id, name = name, imageUrl = "")
 }

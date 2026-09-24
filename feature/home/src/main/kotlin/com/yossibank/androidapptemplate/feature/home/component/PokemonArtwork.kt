@@ -19,17 +19,14 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.yossibank.shared.pokemon.PokemonEntryDetail
 
 @Composable
 fun PokemonArtwork(
-    detail: PokemonEntryDetail.Loaded?,
+    imageUrl: String?,
     fallback: String,
     accent: Color,
     modifier: Modifier = Modifier,
 ) {
-    val imageUrl = detail?.imageUrl
-
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         if (imageUrl == null) {
             Text(
