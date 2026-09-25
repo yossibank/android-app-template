@@ -38,9 +38,9 @@ fun PokemonListToolbar(
     ) {
         Text(
             text = if (filtering) {
-                stringResource(R.string.pokemon_list_progress_filtered, shown, total, loaded)
+                stringResource(R.string.home_progress_filtered, shown, total, loaded)
             } else {
-                stringResource(R.string.pokemon_list_progress, loaded, total)
+                stringResource(R.string.home_progress, loaded, total)
             },
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

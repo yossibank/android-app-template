@@ -3,7 +3,6 @@ package com.yossibank.androidapptemplate.feature.home.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -69,10 +68,6 @@ fun PokemonSkeletonCard() {
             }
 
             PokemonSkeletonBlock(widthFraction = 0.7f, height = 16.dp)
-            Spacer(modifier = Modifier.height(8.dp))
-            PokemonSkeletonBlock(widthFraction = 0.5f, height = 12.dp)
-            Spacer(modifier = Modifier.height(10.dp))
-            PokemonSkeletonBlock(widthFraction = 1f, height = 7.dp)
         }
     }
 }

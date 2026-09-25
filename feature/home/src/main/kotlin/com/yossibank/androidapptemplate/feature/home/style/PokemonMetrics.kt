@@ -6,10 +6,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 
-const val MAX_TOTAL_BASE_STAT = 720f
-
-const val MAX_BASE_STAT = 255f
-
 const val SKELETON_COUNT = 8
 
 val GRID_COLUMNS = GridCells.Fixed(2)
