@@ -9,7 +9,7 @@ ktlint = "14.2.0"
 
 androidx-activity = "1.13.0"
 androidx-compose-bom = "2026.09.00"
-androidx-core = "1.19.0"
+androidx-core = "1.19.1"
 coil = "3.6.3"
 androidx-lifecycle = "2.11.0"
 
