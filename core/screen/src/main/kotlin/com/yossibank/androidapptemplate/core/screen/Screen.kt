@@ -5,10 +5,39 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yossibank.androidapptemplate.core.screen.ui.Message
+
+@Composable
+fun <T> LiveScreen(
+    viewModel: ScreenViewModel<T>,
+    content: @Composable (phase: FetchPhase<T>, actions: ScreenActions) -> Unit,
+) {
+    val phase by viewModel.fetchState.phase.collectAsStateWithLifecycle()
+    val running by viewModel.fetchState.running.collectAsStateWithLifecycle()
+
+    LaunchedEffect(viewModel) {
+        viewModel.start()
+    }
+
+    val actions = remember(viewModel, running) {
+        ScreenActions(
+            reload = { viewModel.request(FetchOperation.RELOAD) },
+            refresh = { viewModel.request(FetchOperation.REFRESH) },
+            loadMore = { viewModel.request(FetchOperation.LOAD_MORE) },
+            isRefreshing = running == FetchOperation.REFRESH,
+            isLoadingMore = running == FetchOperation.LOAD_MORE,
+        )
+    }
+
+    content(phase, actions)
+}
 
 @Composable
 fun <T> Screen(

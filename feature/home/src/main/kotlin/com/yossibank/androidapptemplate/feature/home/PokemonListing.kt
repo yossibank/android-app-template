@@ -14,10 +14,7 @@ interface PokemonListing {
 class PokemonPagerListing(
     private val pager: PokemonPager = PokemonPager(),
 ) : PokemonListing {
-    override suspend fun reload(): PokemonListResult {
-        pager.reset()
-        return pager.loadNext()
-    }
+    override suspend fun reload(): PokemonListResult = pager.reload()
 
     override suspend fun loadNext(): PokemonListResult = pager.loadNext()
 

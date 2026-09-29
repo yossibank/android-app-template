@@ -1,26 +1,20 @@
 package com.yossibank.androidapptemplate.feature.home
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -28,70 +22,47 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.yossibank.androidapptemplate.core.screen.FetchOperation
 import com.yossibank.androidapptemplate.core.screen.FetchPhase
+import com.yossibank.androidapptemplate.core.screen.LiveScreen
 import com.yossibank.androidapptemplate.core.screen.Screen
+import com.yossibank.androidapptemplate.core.screen.ScreenActions
 import com.yossibank.androidapptemplate.core.screen.text
 import com.yossibank.androidapptemplate.core.screen.ui.Banner
+import com.yossibank.androidapptemplate.core.screen.ui.BannerAccessory
+import com.yossibank.androidapptemplate.core.screen.ui.BannerStyle
 import com.yossibank.androidapptemplate.core.screen.ui.Message
 import com.yossibank.androidapptemplate.core.screen.ui.Searchable
+import com.yossibank.androidapptemplate.core.screen.ui.skeleton
 import com.yossibank.androidapptemplate.feature.home.component.PokemonCard
-import com.yossibank.androidapptemplate.feature.home.component.PokemonListToolbar
+import com.yossibank.androidapptemplate.feature.home.component.PokemonGrid
+import com.yossibank.androidapptemplate.feature.home.component.PokemonListGauge
 import com.yossibank.androidapptemplate.feature.home.component.PokemonSkeletonGrid
-import com.yossibank.androidapptemplate.feature.home.style.GRID_ARRANGEMENT
-import com.yossibank.androidapptemplate.feature.home.style.GRID_COLUMNS
-import com.yossibank.androidapptemplate.feature.home.style.GRID_CONTENT_PADDING
-import com.yossibank.shared.pokemon.PokemonEntry
-
-private const val PREFETCH_DISTANCE = 8
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(),
 ) {
-    val phase by viewModel.fetchState.phase.collectAsStateWithLifecycle()
-    val running by viewModel.fetchState.running.collectAsStateWithLifecycle()
-    val viewState by viewModel.viewState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(viewModel) {
-        viewModel.start()
+    LiveScreen(viewModel) { phase, actions ->
+        HomeScaffold(phase = phase, actions = actions, modifier = modifier)
     }
-
-    HomeScaffold(
-        phase = phase,
-        running = running,
-        viewState = viewState,
-        onRequest = viewModel::request,
-        modifier = modifier,
-    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScaffold(
-    phase: FetchPhase<List<PokemonEntry>>,
-    running: FetchOperation?,
-    viewState: HomeViewState,
-    onRequest: (FetchOperation) -> Unit,
+    phase: FetchPhase<PokemonList>,
+    actions: ScreenActions,
     modifier: Modifier = Modifier,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
-    var sortName by rememberSaveable { mutableStateOf(PokemonSort.NUMBER.name) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.home_title)) },
-                actions = {
-                    TextButton(onClick = { onRequest(FetchOperation.RELOAD) }) {
-                        Text(text = stringResource(R.string.home_reload))
-                    }
-                },
-            )
+            TopAppBar(title = { Text(text = stringResource(R.string.home_title)) })
         },
     ) { innerPadding ->
         Searchable(
@@ -102,26 +73,18 @@ fun HomeScaffold(
         ) {
             Screen(
                 phase = phase,
-                onRetry = { onRequest(FetchOperation.RELOAD) },
-                isEmpty = { it.isEmpty() },
+                onRetry = actions.reload,
+                isEmpty = { it.pokemon.isEmpty() },
                 loading = { PokemonSkeletonGrid() },
                 empty = {
                     Message(
                         text = stringResource(R.string.home_empty_title),
                         description = stringResource(R.string.home_empty_description),
-                        onRetry = { onRequest(FetchOperation.RELOAD) },
+                        onRetry = actions.reload,
                     )
                 },
-            ) { pokemon ->
-                HomeContent(
-                    pokemon = pokemon,
-                    query = query,
-                    sort = PokemonSort.valueOf(sortName),
-                    onSortChange = { sortName = it.name },
-                    running = running,
-                    viewState = viewState,
-                    onRequest = onRequest,
-                )
+            ) { list ->
+                HomeContent(list = list, query = query, actions = actions)
             }
         }
     }
@@ -130,92 +93,77 @@ fun HomeScaffold(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeContent(
-    pokemon: List<PokemonEntry>,
+    list: PokemonList,
     query: String,
-    sort: PokemonSort,
-    onSortChange: (PokemonSort) -> Unit,
-    running: FetchOperation?,
-    viewState: HomeViewState,
-    onRequest: (FetchOperation) -> Unit,
+    actions: ScreenActions,
 ) {
-    val filtered = pokemon.filtered(query, sort)
+    val items = list.pokemon.filtered(query)
     val isFiltering = query.isNotEmpty()
+    val isLoadingMore = actions.isLoadingMore && list.notice == null
     val gridState = rememberLazyGridState()
+    val scope = rememberCoroutineScope()
 
-    if (!isFiltering && viewState.notice == null) {
-        LaunchedEffect(gridState, pokemon.size) {
+    if (!isFiltering && list.notice == null) {
+        LaunchedEffect(gridState, items.size) {
             snapshotFlow {
                 gridState.layoutInfo.visibleItemsInfo
                     .lastOrNull()
                     ?.index
             }.collect { lastVisible ->
-                if (lastVisible != null && lastVisible >= pokemon.size - PREFETCH_DISTANCE) {
-                    onRequest(FetchOperation.LOAD_MORE)
+                if (lastVisible != null && lastVisible >= items.size - 8) {
+                    actions.loadMore()
                 }
             }
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        PokemonListToolbar(
-            shown = filtered.size,
-            loaded = pokemon.size,
-            total = viewState.total,
-            filtering = isFiltering,
-            sort = sort,
-            onSortChange = onSortChange,
-        )
+    PullToRefreshBox(
+        isRefreshing = actions.isRefreshing,
+        onRefresh = actions.refresh,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        if (items.isEmpty()) {
+            Message(
+                text = stringResource(R.string.home_no_match_title, query),
+                description = stringResource(R.string.home_no_match_description),
+            )
+            return@PullToRefreshBox
+        }
 
-        PullToRefreshBox(
-            isRefreshing = running == FetchOperation.REFRESH,
-            onRefresh = { onRequest(FetchOperation.REFRESH) },
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            if (filtered.isEmpty()) {
-                Message(
-                    text = stringResource(R.string.home_no_match_title, query),
-                    description = stringResource(R.string.home_no_match_description),
-                )
-                return@PullToRefreshBox
+        PokemonGrid(state = gridState, bottomPadding = 72.dp) {
+            items(items, key = { it.id }) { entry ->
+                PokemonCard(pokemon = entry)
             }
 
-            LazyVerticalGrid(
-                columns = GRID_COLUMNS,
-                state = gridState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = GRID_CONTENT_PADDING,
-                horizontalArrangement = GRID_ARRANGEMENT,
-                verticalArrangement = GRID_ARRANGEMENT,
-            ) {
-                items(filtered, key = { it.id }) { entry ->
-                    PokemonCard(pokemon = entry)
+            if (isLoadingMore) {
+                items(2) {
+                    PokemonCard(pokemon = null, modifier = Modifier.skeleton())
                 }
+            }
 
-                viewState.notice?.let { notice ->
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        Banner(
-                            text = notice.text(),
-                            color = MaterialTheme.colorScheme.error,
-                            onRetry = {
-                                onRequest(if (notice.canRetry) FetchOperation.LOAD_MORE else FetchOperation.RELOAD)
-                            },
-                        )
-                    }
-                }
-
-                if (running == FetchOperation.LOAD_MORE) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
+            list.notice?.let { notice ->
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Banner(
+                        text = notice.text(),
+                        style = BannerStyle.FAILURE,
+                        accessory = if (actions.isLoadingMore || actions.isRefreshing) {
+                            BannerAccessory.Progress
+                        } else {
+                            BannerAccessory.retry { if (notice.canRetry) actions.loadMore() else actions.refresh() }
+                        },
+                    )
                 }
             }
         }
+
+        PokemonListGauge(
+            loaded = list.pokemon.size,
+            total = list.total,
+            matched = if (isFiltering) items.size else null,
+            onClick = { scope.launch { gridState.animateScrollToItem(0) } },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 8.dp),
+        )
     }
 }

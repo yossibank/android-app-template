@@ -15,18 +15,18 @@ sealed interface FetchPhase<out T> {
 }
 
 sealed interface FetchMore<out T> {
-    val value: T
-
     data class More<T>(
-        override val value: T,
+        val value: T,
     ) : FetchMore<T>
 
     data class Last<T>(
-        override val value: T,
+        val value: T,
     ) : FetchMore<T>
+
+    data object Unchanged : FetchMore<Nothing>
 }
 
-enum class FetchOperation {
+internal enum class FetchOperation {
     RELOAD,
     REFRESH,
     LOAD_MORE,

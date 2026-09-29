@@ -5,75 +5,107 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.yossibank.androidapptemplate.feature.home.R
-import com.yossibank.androidapptemplate.feature.home.style.CARD_CONTENT_PADDING
-import com.yossibank.androidapptemplate.feature.home.style.CARD_SHAPE
 import com.yossibank.shared.pokemon.PokemonEntry
 
 @Composable
-fun PokemonCard(pokemon: PokemonEntry) {
-    val accent = MaterialTheme.colorScheme.primary
+fun PokemonCard(
+    pokemon: PokemonEntry?,
+    modifier: Modifier = Modifier,
+) {
+    var tint by remember(pokemon?.imageUrl) { mutableStateOf(pokemon?.imageUrl?.let(::cachedTint)) }
 
-    Card(
-        shape = CARD_SHAPE,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-    ) {
-        Box(
-            modifier = Modifier.background(
-                Brush.verticalGradient(
-                    listOf(accent.copy(alpha = 0.28f), accent.copy(alpha = 0.06f), Color.Transparent),
-                ),
+    val color = when {
+        pokemon == null -> MaterialTheme.colorScheme.onSurfaceVariant
+        else -> tint ?: Color.Gray.copy(alpha = 0.5f)
+    }
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+            .background(
+                Brush.verticalGradient(listOf(color.copy(alpha = 0.28f), color.copy(alpha = 0.06f), Color.Transparent)),
             ),
-        ) {
+    ) {
+        if (pokemon != null) {
             Text(
                 text = stringResource(R.string.home_number_plain, pokemon.id),
-                style = MaterialTheme.typography.displayLarge,
+                fontSize = 64.sp,
                 fontWeight = FontWeight.Black,
-                color = accent.copy(alpha = 0.10f),
+                color = color.copy(alpha = 0.10f),
                 maxLines = 1,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(horizontal = 6.dp),
+                    .padding(horizontal = 8.dp),
             )
+        }
 
-            Column(modifier = Modifier.padding(CARD_CONTENT_PADDING)) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            if (pokemon == null) {
+                Placeholder(widthFraction = 0.3f, height = 12.dp)
+            } else {
                 Text(
                     text = stringResource(R.string.home_number, pokemon.id),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
 
-                PokemonArtwork(
-                    imageUrl = pokemon.imageUrl,
-                    fallback = pokemon.name,
-                    accent = accent,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f),
-                )
+            PokemonArtwork(
+                pokemon = pokemon,
+                color = color,
+                onTint = { tint = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f),
+            )
 
+            if (pokemon == null) {
+                Placeholder(widthFraction = 0.7f, height = 16.dp)
+            } else {
                 Text(
-                    text = pokemon.name.replaceFirstChar { it.uppercase() },
+                    text = pokemon.displayName,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     maxLines = 2,
                 )
             }
         }
     }
+}
+
+@Composable
+private fun Placeholder(
+    widthFraction: Float,
+    height: Dp,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth(widthFraction)
+            .height(height)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+    )
 }

@@ -3,13 +3,17 @@ package com.yossibank.androidapptemplate.feature.home
 import androidx.lifecycle.ViewModelStore
 import com.yossibank.androidapptemplate.core.screen.FetchFailure
 import com.yossibank.androidapptemplate.core.screen.FetchMore
+import com.yossibank.androidapptemplate.core.screen.FetchPhase
 import com.yossibank.shared.core.ApiFailure
 import com.yossibank.shared.pokemon.PokemonEntry
 import com.yossibank.shared.pokemon.PokemonListResult
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -54,7 +58,14 @@ private fun loaded(
 private fun degraded(
     failure: ApiFailure,
     vararg names: String,
-) = PokemonListResult.Loaded(pokemon = entries(names), hasMore = true, total = 1351, failure = failure)
+) = PokemonListResult.Degraded(pokemon = entries(names), hasMore = true, total = 1351, failure = failure)
+
+private val FetchMore<PokemonList>.list: PokemonList?
+    get() = when (this) {
+        is FetchMore.More -> value
+        is FetchMore.Last -> value
+        FetchMore.Unchanged -> null
+    }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -74,36 +85,36 @@ class HomeViewModelTest {
 
     @Test
     fun `取得に成功したら一覧になる`() = runTest(dispatcher) {
-        assertEquals(listOf("pikachu"), model(loaded("pikachu")).fetch().map { it.name })
+        val list = model(loaded("pikachu")).fetch()
+
+        assertEquals(listOf("pikachu"), list.pokemon.map { it.name })
+        assertEquals(1351, list.total)
+        assertNull(list.notice)
     }
 
     @Test
     fun `続きを読むと一覧が伸びる`() = runTest(dispatcher) {
         val model = model(loaded("a", hasMore = true), loaded("a", "b"))
 
-        model.fetch()
-        val more = model.fetchMore()
+        val more = model.fetchMore(model.fetch())
 
-        assertEquals(listOf("a", "b"), more?.value?.map { it.name })
+        assertEquals(listOf("a", "b"), more.list?.pokemon?.map { it.name })
     }
 
     @Test
     fun `最後のページは終端として返す`() = runTest(dispatcher) {
         val model = model(loaded("a"))
 
-        model.fetch()
-
-        assertTrue("終端になっていない", model.fetchMore() is FetchMore.Last)
+        assertTrue("終端になっていない", model.fetchMore(model.fetch()) is FetchMore.Last)
     }
 
     @Test
     fun `追加取得が一部失敗したら知らせを立て、続きがあることは残す`() = runTest(dispatcher) {
         val model = model(loaded("a", hasMore = true), degraded(ApiFailure.Offline, "a"))
 
-        model.fetch()
-        val more = model.fetchMore()
+        val more = model.fetchMore(model.fetch())
 
-        assertEquals("追加取得の失敗が握り潰されている", FetchFailure.offline, model.viewState.value.notice)
+        assertEquals("追加取得の失敗が握り潰されている", FetchFailure.offline, more.list?.notice)
         assertTrue("失敗しただけで続きが無いことにされている", more is FetchMore.More)
     }
 
@@ -120,31 +131,53 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `続きの取得がすべて失敗したら知らせを立て、一覧には何も積まない`() = runTest(dispatcher) {
+    fun `続きの取得がすべて失敗したら、読み込めている分はそのままに知らせを載せる`() = runTest(dispatcher) {
         val model = model(loaded("a", hasMore = true), PokemonListResult.Failed(ApiFailure.Offline))
 
-        model.fetch()
+        val more = model.fetchMore(model.fetch())
 
-        assertNull(model.fetchMore())
-        assertEquals(FetchFailure.offline, model.viewState.value.notice)
+        assertTrue("失敗しただけで続きが無いことにされている", more is FetchMore.More)
+        assertEquals("失敗したのに一覧が変わっている", listOf("a"), more.list?.pokemon?.map { it.name })
+        assertEquals(FetchFailure.offline, more.list?.notice)
     }
 
     @Test
     fun `捨てられた結果は続きとして積まない`() = runTest(dispatcher) {
         val model = model(loaded("a", hasMore = true), PokemonListResult.Stale)
 
-        model.fetch()
-
-        assertNull("捨てられた結果が続きとして積まれている", model.fetchMore())
+        assertEquals("捨てられた結果が続きとして積まれている", FetchMore.Unchanged, model.fetchMore(model.fetch()))
     }
 
     @Test
-    fun `全体件数が表示状態まで届く`() = runTest(dispatcher) {
-        val model = model(loaded("a"))
+    fun `再取得で置き換えられた続きの取得は、知らせを立てない`() = runTest(dispatcher) {
+        val gate = CompletableDeferred<Unit>()
+        val reloads = ArrayDeque(listOf(loaded("a", hasMore = true), loaded("x")))
+        val model = HomeViewModel(
+            object : PokemonListing {
+                override suspend fun reload(): PokemonListResult = reloads.removeFirst()
 
-        model.fetch()
+                override suspend fun loadNext(): PokemonListResult {
+                    gate.await()
+                    return degraded(ApiFailure.Offline, "a", "b")
+                }
 
-        assertEquals(1351, model.viewState.value.total)
+                override fun close() = Unit
+            },
+        )
+
+        model.fetchState.reload(model::fetch)
+        advanceUntilIdle()
+        model.fetchState.loadMore(model::fetchMore)
+        runCurrent()
+
+        model.fetchState.reload(model::fetch)
+        gate.complete(Unit)
+        advanceUntilIdle()
+
+        val list = (model.fetchState.phase.value as FetchPhase.Loaded).value
+
+        assertEquals(listOf("x"), list.pokemon.map { it.name })
+        assertNull("置き換えられた続きの取得が知らせを立てている", list.notice)
     }
 
     @Test
