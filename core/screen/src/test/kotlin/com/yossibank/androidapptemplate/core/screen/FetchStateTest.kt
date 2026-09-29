@@ -157,7 +157,7 @@ class FetchStateTest {
         state.reload { listOf(1, 2) }
         advanceUntilIdle()
 
-        state.loadMore { null }
+        state.loadMore { FetchMore.Unchanged }
         advanceUntilIdle()
 
         assertEquals(listOf(1, 2), state.loaded)

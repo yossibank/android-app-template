@@ -8,15 +8,15 @@ abstract class ScreenViewModel<T> : ViewModel() {
 
     abstract suspend fun fetch(): T
 
-    open suspend fun fetchMore(): FetchMore<T>? = null
+    open suspend fun fetchMore(current: T): FetchMore<T> = FetchMore.Unchanged
 
-    fun start() {
+    internal fun start() {
         if (fetchState.phase.value !is FetchPhase.Idle) return
 
         request(FetchOperation.RELOAD)
     }
 
-    fun request(operation: FetchOperation) {
+    internal fun request(operation: FetchOperation) {
         when (operation) {
             FetchOperation.RELOAD -> fetchState.reload(::fetch)
             FetchOperation.REFRESH -> fetchState.refresh(::fetch)

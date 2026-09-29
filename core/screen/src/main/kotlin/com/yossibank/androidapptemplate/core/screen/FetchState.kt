@@ -16,7 +16,7 @@ class FetchState<T>(
     val phase: StateFlow<FetchPhase<T>> = mutablePhase.asStateFlow()
 
     private val mutableRunning = MutableStateFlow<FetchOperation?>(null)
-    val running: StateFlow<FetchOperation?> = mutableRunning.asStateFlow()
+    internal val running: StateFlow<FetchOperation?> = mutableRunning.asStateFlow()
 
     private var job: Job? = null
     private var reachedEnd = false
@@ -39,10 +39,12 @@ class FetchState<T>(
         replace(FetchOperation.REFRESH, work)
     }
 
-    fun loadMore(work: suspend () -> FetchMore<T>?) {
-        if (mutablePhase.value !is FetchPhase.Loaded || reachedEnd) return
+    fun loadMore(work: suspend (T) -> FetchMore<T>) {
+        val phase = mutablePhase.value
 
-        run(FetchOperation.LOAD_MORE, replacing = false, work) { result ->
+        if (phase !is FetchPhase.Loaded || reachedEnd) return
+
+        run(FetchOperation.LOAD_MORE, replacing = false, { work(phase.value) }) { result ->
             when (result) {
                 is FetchMore.More -> mutablePhase.value = FetchPhase.Loaded(result.value)
 
@@ -51,7 +53,7 @@ class FetchState<T>(
                     mutablePhase.value = FetchPhase.Loaded(result.value)
                 }
 
-                null -> Unit
+                FetchMore.Unchanged -> Unit
             }
         }
     }

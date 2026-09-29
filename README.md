@@ -12,18 +12,12 @@ Jetpack Compose と Kotlin Multiplatform で作る、ポケモン図鑑アプリ
 ![Coroutines](https://img.shields.io/badge/Coroutines-7F52FF?logo=kotlin&logoColor=white)
 ![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/demo-dark.gif">
-  <img src="docs/images/demo.gif" width="260" alt="スクロールで続きを読み込み、タイプで絞り込む">
-</picture>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/list-dark.png">
-  <img src="docs/images/list-light.png" width="260" alt="ポケモンの一覧">
-</picture>
+<img src="docs/images/list-light.png" width="260" alt="ポケモンの一覧（ライトモード）">
+<img src="docs/images/list-dark.png" width="260" alt="ポケモンの一覧（ダークモード）">
 
 </div>
 
-PokeAPI のポケモンを、無限スクロール・タイプでの絞り込み・並び替え・詳細シートで見られます。
+PokeAPI のポケモンを、無限スクロールと名前での絞り込みで見られます。
 
 ## 3 つのリポジトリ
 
@@ -54,7 +48,7 @@ flowchart LR
 | モジュール | 役割 |
 | --- | --- |
 | `:core:screen` | 画面の土台（読み込み状態の管理）と、機能に依らない UI 部品 |
-| `:feature:home` | 一覧と詳細の画面 |
+| `:feature:home` | 一覧の画面 |
 | `:app` | 画面の組み立て |
 
 ## 動かし方
