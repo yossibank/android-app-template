@@ -16,20 +16,14 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/yossibank/kmp-app-template")
+            name = "CodeArtifact"
+            url = uri("https://yossibank-724669215656.d.codeartifact.ap-northeast-1.amazonaws.com/maven/kmp/")
             content {
                 includeGroup("com.yossibank")
             }
             credentials {
-                username = providers
-                    .gradleProperty("gpr.user")
-                    .orElse(providers.environmentVariable("GITHUB_ACTOR"))
-                    .orNull
-                password = providers
-                    .gradleProperty("gpr.token")
-                    .orElse(providers.environmentVariable("GITHUB_TOKEN"))
-                    .orNull
+                username = "aws"
+                password = providers.environmentVariable("CODEARTIFACT_AUTH_TOKEN").orNull
             }
         }
         google()
@@ -41,7 +35,13 @@ providers
     .gradleProperty("shared.dir")
     .orElse(providers.environmentVariable("SHARED_DIR"))
     .orNull
-    ?.let { includeBuild(it) }
+    ?.let {
+        includeBuild(it) {
+            dependencySubstitution {
+                substitute(module("com.yossibank:shared-android")).using(project(":shared"))
+            }
+        }
+    }
 
 rootProject.name = "android-app-template"
 include(":app")

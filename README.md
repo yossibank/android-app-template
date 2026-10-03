@@ -54,7 +54,11 @@ flowchart LR
 ## 動かし方
 
 > [!NOTE]
-> 共通コアを GitHub Packages から取得するため、`~/.gradle/gradle.properties` に `gpr.user` / `gpr.token` が必要です。
+> 共通コアを AWS CodeArtifact から取得するため、環境変数 `CODEARTIFACT_AUTH_TOKEN` にトークンが必要です（最長 12 時間有効）。
+>
+> ```sh
+> export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain yossibank --domain-owner 724669215656 --region ap-northeast-1 --query authorizationToken --output text)
+> ```
 
 1. Android Studio で開くか、`make build` でビルドする
 2. 変更したら `make verify` を通す
@@ -62,7 +66,7 @@ flowchart LR
 <details>
 <summary>共通コアを手元のものに差し替える</summary>
 
-kmp-app-template のディレクトリを絶対パスで渡します。このときは `gpr.user` / `gpr.token` は要りません。
+kmp-app-template のディレクトリを絶対パスで渡します。このときは `CODEARTIFACT_AUTH_TOKEN` は要りません。
 
 ```sh
 SHARED_DIR=/path/to/kmp-app-template make verify
