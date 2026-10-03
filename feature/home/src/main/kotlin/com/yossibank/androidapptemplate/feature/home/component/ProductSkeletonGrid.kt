@@ -6,13 +6,13 @@ import androidx.compose.ui.Modifier
 import com.yossibank.androidapptemplate.core.screen.ui.skeleton
 
 @Composable
-fun PokemonSkeletonGrid() {
-    PokemonGrid(
+fun ProductSkeletonGrid() {
+    ProductGrid(
         modifier = Modifier.skeleton(),
         userScrollEnabled = false,
     ) {
         items(List(8) { it }, key = { it }) {
-            PokemonCard(pokemon = null)
+            ProductCard(product = null)
         }
     }
 }

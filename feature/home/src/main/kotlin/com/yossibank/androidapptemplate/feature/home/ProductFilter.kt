@@ -1,12 +1,12 @@
 package com.yossibank.androidapptemplate.feature.home
 
 import com.yossibank.androidapptemplate.core.screen.standardContains
-import com.yossibank.shared.pokemon.PokemonEntry
+import com.yossibank.shared.product.ProductEntry
 
-fun List<PokemonEntry>.filtered(query: String): List<PokemonEntry> {
+fun List<ProductEntry>.filtered(query: String): List<ProductEntry> {
     val trimmed = query.trim()
 
     if (trimmed.isEmpty()) return this
 
-    return filter { it.displayName.standardContains(trimmed) }
+    return filter { it.title.standardContains(trimmed) }
 }

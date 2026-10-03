@@ -1,12 +1,11 @@
 package com.yossibank.androidapptemplate.feature.home
 
-import androidx.lifecycle.ViewModelStore
 import com.yossibank.androidapptemplate.core.screen.FetchFailure
 import com.yossibank.androidapptemplate.core.screen.FetchMore
 import com.yossibank.androidapptemplate.core.screen.FetchPhase
 import com.yossibank.shared.core.ApiFailure
-import com.yossibank.shared.pokemon.PokemonEntry
-import com.yossibank.shared.pokemon.PokemonListResult
+import com.yossibank.shared.product.ProductEntry
+import com.yossibank.shared.product.ProductListResult
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,42 +24,35 @@ import org.junit.Before
 import org.junit.Test
 
 private class StubListing(
-    private vararg val pages: PokemonListResult,
-) : PokemonListing {
+    private vararg val pages: ProductListResult,
+) : ProductListing {
     private var index = 0
 
-    var closed = false
-        private set
-
-    override suspend fun reload(): PokemonListResult {
+    override suspend fun reload(): ProductListResult {
         index = 0
         return next()
     }
 
-    override suspend fun loadNext(): PokemonListResult = next()
+    override suspend fun loadNext(): ProductListResult = next()
 
-    override fun close() {
-        closed = true
-    }
-
-    private fun next(): PokemonListResult = pages[minOf(index++, pages.size - 1)]
+    private fun next(): ProductListResult = pages[minOf(index++, pages.size - 1)]
 }
 
-private fun entries(names: Array<out String>) = names.mapIndexed { index, name ->
-    PokemonEntry(id = index + 1, name = name, imageUrl = "https://img.example/${index + 1}.png")
+private fun entries(titles: Array<out String>) = titles.mapIndexed { index, title ->
+    ProductEntry(id = index + 1, title = title, thumbnailUrl = "https://img.example/${index + 1}.webp")
 }
 
 private fun loaded(
-    vararg names: String,
+    vararg titles: String,
     hasMore: Boolean = false,
-) = PokemonListResult.Loaded(pokemon = entries(names), hasMore = hasMore, total = 1351)
+) = ProductListResult.Loaded(products = entries(titles), hasMore = hasMore, total = 194)
 
 private fun degraded(
     failure: ApiFailure,
-    vararg names: String,
-) = PokemonListResult.Degraded(pokemon = entries(names), hasMore = true, total = 1351, failure = failure)
+    vararg titles: String,
+) = ProductListResult.Degraded(products = entries(titles), hasMore = true, total = 194, failure = failure)
 
-private val FetchMore<PokemonList>.list: PokemonList?
+private val FetchMore<ProductList>.list: ProductList?
     get() = when (this) {
         is FetchMore.More -> value
         is FetchMore.Last -> value
@@ -81,14 +73,14 @@ class HomeViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun model(vararg pages: PokemonListResult) = HomeViewModel(StubListing(*pages))
+    private fun model(vararg pages: ProductListResult) = HomeViewModel(StubListing(*pages))
 
     @Test
     fun `取得に成功したら一覧になる`() = runTest(dispatcher) {
-        val list = model(loaded("pikachu")).fetch()
+        val list = model(loaded("Red Lipstick")).fetch()
 
-        assertEquals(listOf("pikachu"), list.pokemon.map { it.name })
-        assertEquals(1351, list.total)
+        assertEquals(listOf("Red Lipstick"), list.products.map { it.title })
+        assertEquals(194, list.total)
         assertNull(list.notice)
     }
 
@@ -98,7 +90,7 @@ class HomeViewModelTest {
 
         val more = model.fetchMore(model.fetch())
 
-        assertEquals(listOf("a", "b"), more.list?.pokemon?.map { it.name })
+        assertEquals(listOf("a", "b"), more.list?.products?.map { it.title })
     }
 
     @Test
@@ -120,7 +112,7 @@ class HomeViewModelTest {
 
     @Test
     fun `最初の取得の失敗はそのまま失敗として投げる`() = runTest(dispatcher) {
-        val model = model(PokemonListResult.Failed(ApiFailure.Timeout))
+        val model = model(ProductListResult.Failed(ApiFailure.Timeout))
 
         try {
             model.fetch()
@@ -132,18 +124,18 @@ class HomeViewModelTest {
 
     @Test
     fun `続きの取得がすべて失敗したら、読み込めている分はそのままに知らせを載せる`() = runTest(dispatcher) {
-        val model = model(loaded("a", hasMore = true), PokemonListResult.Failed(ApiFailure.Offline))
+        val model = model(loaded("a", hasMore = true), ProductListResult.Failed(ApiFailure.Offline))
 
         val more = model.fetchMore(model.fetch())
 
         assertTrue("失敗しただけで続きが無いことにされている", more is FetchMore.More)
-        assertEquals("失敗したのに一覧が変わっている", listOf("a"), more.list?.pokemon?.map { it.name })
+        assertEquals("失敗したのに一覧が変わっている", listOf("a"), more.list?.products?.map { it.title })
         assertEquals(FetchFailure.offline, more.list?.notice)
     }
 
     @Test
     fun `捨てられた結果は続きとして積まない`() = runTest(dispatcher) {
-        val model = model(loaded("a", hasMore = true), PokemonListResult.Stale)
+        val model = model(loaded("a", hasMore = true), ProductListResult.Stale)
 
         assertEquals("捨てられた結果が続きとして積まれている", FetchMore.Unchanged, model.fetchMore(model.fetch()))
     }
@@ -153,15 +145,13 @@ class HomeViewModelTest {
         val gate = CompletableDeferred<Unit>()
         val reloads = ArrayDeque(listOf(loaded("a", hasMore = true), loaded("x")))
         val model = HomeViewModel(
-            object : PokemonListing {
-                override suspend fun reload(): PokemonListResult = reloads.removeFirst()
+            object : ProductListing {
+                override suspend fun reload(): ProductListResult = reloads.removeFirst()
 
-                override suspend fun loadNext(): PokemonListResult {
+                override suspend fun loadNext(): ProductListResult {
                     gate.await()
                     return degraded(ApiFailure.Offline, "a", "b")
                 }
-
-                override fun close() = Unit
             },
         )
 
@@ -176,19 +166,32 @@ class HomeViewModelTest {
 
         val list = (model.fetchState.phase.value as FetchPhase.Loaded).value
 
-        assertEquals(listOf("x"), list.pokemon.map { it.name })
+        assertEquals(listOf("x"), list.products.map { it.title })
         assertNull("置き換えられた続きの取得が知らせを立てている", list.notice)
     }
 
     @Test
-    fun `畳まれたら共通コアを閉じる`() {
-        val stub = StubListing(loaded("a"))
-        val model = HomeViewModel(stub)
+    fun `最初の取得が認証切れなら、セッションの終わりとして投げる`() = runTest(dispatcher) {
+        val model = model(ProductListResult.Failed(ApiFailure.Unauthorized))
 
-        ViewModelStore()
-            .apply { put("home", model) }
-            .clear()
+        try {
+            model.fetch()
+            fail("失敗が投げられていない")
+        } catch (e: FetchFailure) {
+            assertTrue(e.endsSession)
+        }
+    }
 
-        assertTrue(stub.closed)
+    @Test
+    fun `続きの取得が認証切れなら、知らせにせずセッションの終わりとして投げる`() = runTest(dispatcher) {
+        val model = model(loaded("a", hasMore = true), degraded(ApiFailure.Unauthorized, "a"))
+        val current = model.fetch()
+
+        try {
+            model.fetchMore(current)
+            fail("認証切れが知らせに紛れている")
+        } catch (e: FetchFailure) {
+            assertTrue(e.endsSession)
+        }
     }
 }

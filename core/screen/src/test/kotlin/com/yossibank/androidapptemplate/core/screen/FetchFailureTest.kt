@@ -13,7 +13,7 @@ class FetchFailureTest {
         assertEquals(FetchFailure.offline, ApiFailure.Offline.toFetchFailure())
         assertEquals(FetchFailure.timeout, ApiFailure.Timeout.toFetchFailure())
         assertEquals(FetchFailure.unreadable, ApiFailure.Unreadable.toFetchFailure())
-        assertEquals(FetchFailure.unexpected(canRetry = false), ApiFailure.Closed.toFetchFailure())
+        assertEquals(FetchFailure.unauthorized, ApiFailure.Unauthorized.toFetchFailure())
     }
 
     @Test
@@ -37,6 +37,13 @@ class FetchFailureTest {
         assertTrue(ApiFailure.Server(429).toFetchFailure().canRetry)
         assertFalse(ApiFailure.Server(404).toFetchFailure().canRetry)
         assertFalse(ApiFailure.Unreadable.toFetchFailure().canRetry)
-        assertFalse(ApiFailure.Closed.toFetchFailure().canRetry)
+        assertFalse(ApiFailure.Unauthorized.toFetchFailure().canRetry)
+    }
+
+    @Test
+    fun `認証切れだけがセッションの終わりを知らせる`() {
+        assertTrue(ApiFailure.Unauthorized.toFetchFailure().endsSession)
+        assertFalse(ApiFailure.Offline.toFetchFailure().endsSession)
+        assertFalse(ApiFailure.Server(401).toFetchFailure().endsSession)
     }
 }

@@ -52,6 +52,7 @@ androidComponents {
 dependencies {
     implementation(project(":core:screen"))
     implementation(project(":feature:home"))
+    implementation(project(":feature:login"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

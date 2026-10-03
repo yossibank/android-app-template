@@ -12,7 +12,7 @@ import com.yossibank.androidapptemplate.core.screen.ui.Gauge
 import com.yossibank.androidapptemplate.feature.home.R
 
 @Composable
-fun PokemonListGauge(
+fun ProductListGauge(
     loaded: Int,
     total: Int,
     matched: Int?,

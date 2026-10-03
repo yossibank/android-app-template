@@ -9,6 +9,7 @@ data class FetchFailure(
     @param:StringRes val messageRes: Int,
     val formatArgs: List<Any> = emptyList(),
     val canRetry: Boolean = true,
+    val endsSession: Boolean = false,
 ) : Exception() {
     companion object {
         val offline: FetchFailure get() = FetchFailure(R.string.screen_offline)
@@ -16,6 +17,9 @@ data class FetchFailure(
         val timeout: FetchFailure get() = FetchFailure(R.string.screen_timeout)
 
         val unreadable: FetchFailure get() = FetchFailure(R.string.screen_unreadable, canRetry = false)
+
+        val unauthorized: FetchFailure
+            get() = FetchFailure(R.string.screen_unauthorized, canRetry = false, endsSession = true)
 
         fun unexpected(canRetry: Boolean): FetchFailure = FetchFailure(R.string.screen_unexpected, canRetry = canRetry)
 
@@ -31,7 +35,7 @@ fun ApiFailure.toFetchFailure(): FetchFailure = when (this) {
     ApiFailure.Timeout -> FetchFailure.timeout
     is ApiFailure.Server -> FetchFailure.server(statusCode, canRetry)
     ApiFailure.Unreadable -> FetchFailure.unreadable
-    ApiFailure.Closed -> FetchFailure.unexpected(canRetry = false)
+    ApiFailure.Unauthorized -> FetchFailure.unauthorized
 }
 
 @Composable

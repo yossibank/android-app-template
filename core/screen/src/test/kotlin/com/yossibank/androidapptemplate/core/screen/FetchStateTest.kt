@@ -9,6 +9,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 private val <T> FetchState<T>.loaded: T?
@@ -136,6 +137,31 @@ class FetchStateTest {
         advanceUntilIdle()
 
         assertEquals(FetchFailure.unexpected(canRetry = true), state.failure)
+    }
+
+    @Test
+    fun `認証切れで失敗したらセッションの終わりを知らせる`() = runTest {
+        val state = state()
+
+        state.reload { throw FetchFailure.offline }
+        advanceUntilIdle()
+        assertFalse("ただの失敗でセッションが終わったことになっている", state.sessionEnded.value)
+
+        state.reload { throw FetchFailure.unauthorized }
+        advanceUntilIdle()
+        assertTrue(state.sessionEnded.value)
+    }
+
+    @Test
+    fun `続きの取得が認証切れで失敗しても、セッションの終わりを知らせる`() = runTest {
+        val state = state()
+        state.reload { listOf(1, 2) }
+        advanceUntilIdle()
+
+        state.loadMore { throw FetchFailure.unauthorized }
+        advanceUntilIdle()
+
+        assertTrue(state.sessionEnded.value)
     }
 
     @Test

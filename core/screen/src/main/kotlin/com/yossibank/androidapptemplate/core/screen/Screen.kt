@@ -17,10 +17,16 @@ import com.yossibank.androidapptemplate.core.screen.ui.Message
 @Composable
 fun <T> LiveScreen(
     viewModel: ScreenViewModel<T>,
+    onSessionEnded: () -> Unit = {},
     content: @Composable (phase: FetchPhase<T>, actions: ScreenActions) -> Unit,
 ) {
     val phase by viewModel.fetchState.phase.collectAsStateWithLifecycle()
     val running by viewModel.fetchState.running.collectAsStateWithLifecycle()
+    val sessionEnded by viewModel.fetchState.sessionEnded.collectAsStateWithLifecycle()
+
+    LaunchedEffect(sessionEnded) {
+        if (sessionEnded) onSessionEnded()
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.start()
