@@ -1,6 +1,6 @@
 <div align="center">
 
-# android-app-template
+# 🤖 android-app-template
 
 Jetpack Compose と Kotlin Multiplatform で作る、商品一覧アプリのテンプレート
 
@@ -15,28 +15,29 @@ Jetpack Compose と Kotlin Multiplatform で作る、商品一覧アプリのテ
 <img src="docs/images/list-light.png" width="260" alt="商品の一覧（ライトモード）">
 <img src="docs/images/list-dark.png" width="260" alt="商品の一覧（ダークモード）">
 
+🔐 DummyJSON にログイン ・ 📜 無限スクロール ・ 🔍 商品名で絞り込み
+
 </div>
 
-DummyJSON にログインし、商品を無限スクロールと商品名での絞り込みで見られます。
-
-## 3 つのリポジトリ
+## 🔗 3 つのリポジトリ
 
 ```mermaid
 flowchart LR
-    KMP["kmp-app-template<br/>共通ロジック"]
-    AND["android-app-template<br/>Android アプリ"]
-    IOS["ios-app-template<br/>iOS アプリ"]
-    KMP -->|"AAR / klib"| AND
-    KMP -->|"Shared.xcframework"| IOS
+    KMP["🧩 kmp-app-template<br/>共通ロジック"]
+    AND["🤖 android-app-template<br/>Android アプリ"]
+    IOS["🍎 ios-app-template<br/>iOS アプリ"]
+    KMP -->|"AAR<br/>AWS CodeArtifact"| AND
+    KMP -->|"Shared.xcframework<br/>GitHub Releases + SPM"| IOS
+    style AND stroke-width:3px
 ```
 
-[kmp-app-template](https://github.com/yossibank/kmp-app-template) ・ [ios-app-template](https://github.com/yossibank/ios-app-template)
+[🧩 kmp-app-template](https://github.com/yossibank/kmp-app-template) ・ [🍎 ios-app-template](https://github.com/yossibank/ios-app-template)
 
-## モジュール構成
+## 🧱 モジュール構成
 
 ```mermaid
 flowchart LR
-    SHARED["shared<br/><i>共通コア</i>"]
+    SHARED["🧩 shared<br/><i>共通コア</i>"]
     SCREEN[":core:screen"]
     HOME[":feature:home"]
     LOGIN[":feature:login"]
@@ -56,16 +57,19 @@ flowchart LR
 | `:feature:login` | ログインの画面 |
 | `:app` | 共通コアの設定と、ログイン状態に応じた画面の切り替え |
 
-## 動かし方
+## 🚀 動かし方
 
-> [!NOTE]
-> 共通コアを AWS CodeArtifact から取得します。AWS にログインしたうえで `make token` を実行すると、トークンが `~/.gradle/gradle.properties` に書き込まれます（12 時間有効）。Android Studio もこのトークンを使います。
+| | コマンド | 内容 |
+| --- | --- | --- |
+| 1️⃣ | `make token` | 共通コアを取得するトークンを `~/.gradle/gradle.properties` に書き込む（12 時間有効、Android Studio も使う） |
+| 2️⃣ | `make build` | ビルドする（Android Studio で開いてもよい） |
+| 3️⃣ | `make verify` | 変更したら通す |
 
-1. Android Studio で開くか、`make build` でビルドする
-2. 変更したら `make verify` を通す
+> [!IMPORTANT]
+> 共通コアは AWS CodeArtifact から取得します。`make token` の前に AWS にログインしておきます。
 
 <details>
-<summary>共通コアを手元のものに差し替える</summary>
+<summary>🔄 共通コアを手元のものに差し替える</summary>
 
 kmp-app-template のディレクトリを絶対パスで渡します。このときはトークンは要りません。
 
@@ -78,7 +82,7 @@ Android Studio では `~/.gradle/gradle.properties` に `shared.dir=/path/to/kmp
 </details>
 
 <details>
-<summary>テンプレートから作ったとき</summary>
+<summary>🧰 テンプレートから作ったとき</summary>
 
 パッケージの接頭辞と GitHub のオーナーを置き換えます。3 つのリポジトリそれぞれで実行します。
 
