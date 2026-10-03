@@ -20,6 +20,8 @@ android {
             .toInt()
         versionCode = 1
         versionName = "0.1.0"
+
+        buildConfigField("String", "API_BASE_URL", "\"https://dummyjson.com\"")
     }
 
     buildTypes {
@@ -39,6 +41,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }

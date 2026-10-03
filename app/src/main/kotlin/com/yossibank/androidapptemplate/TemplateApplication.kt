@@ -7,6 +7,6 @@ import com.yossibank.shared.auth.configure
 class TemplateApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        Session.configure(this, "https://dummyjson.com")
+        Session.configure(this, BuildConfig.API_BASE_URL)
     }
 }
