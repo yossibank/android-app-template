@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.yossibank.androidapptemplate.core.screen.ui.AppTheme
-import com.yossibank.androidapptemplate.feature.home.HomeScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -13,7 +12,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppTheme {
-                HomeScreen()
+                AppRoot()
             }
         }
     }

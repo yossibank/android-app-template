@@ -1,42 +1,48 @@
 package com.yossibank.androidapptemplate.feature.home
 
+import com.yossibank.androidapptemplate.core.screen.FetchFailure
 import com.yossibank.androidapptemplate.core.screen.FetchMore
 import com.yossibank.androidapptemplate.core.screen.ScreenViewModel
 import com.yossibank.androidapptemplate.core.screen.toFetchFailure
-import com.yossibank.shared.pokemon.PokemonListResult
+import com.yossibank.shared.core.ApiFailure
+import com.yossibank.shared.product.ProductListResult
 
 class HomeViewModel(
-    private val listing: PokemonListing = PokemonPagerListing(),
-) : ScreenViewModel<PokemonList>() {
-    override suspend fun fetch(): PokemonList = when (val result = listing.reload()) {
-        is PokemonListResult.Loaded -> PokemonList(result.pokemon, result.total)
+    private val listing: ProductListing = ProductPagerListing(),
+) : ScreenViewModel<ProductList>() {
+    override suspend fun fetch(): ProductList = when (val result = listing.reload()) {
+        is ProductListResult.Loaded -> ProductList(result.products, result.total)
 
-        is PokemonListResult.Degraded -> PokemonList(result.pokemon, result.total, result.failure.toFetchFailure())
+        is ProductListResult.Degraded -> ProductList(result.products, result.total, result.failure.notice())
 
-        is PokemonListResult.Failed -> throw result.failure.toFetchFailure()
+        is ProductListResult.Failed -> throw result.failure.toFetchFailure()
 
-        PokemonListResult.Stale -> PokemonList(pokemon = emptyList(), total = 0)
+        ProductListResult.Stale -> ProductList(products = emptyList(), total = 0)
     }
 
-    override suspend fun fetchMore(current: PokemonList): FetchMore<PokemonList> = when (val result = listing.loadNext()) {
-        is PokemonListResult.Loaded -> page(PokemonList(result.pokemon, result.total), result.hasMore)
+    override suspend fun fetchMore(current: ProductList): FetchMore<ProductList> = when (val result = listing.loadNext()) {
+        is ProductListResult.Loaded -> page(ProductList(result.products, result.total), result.hasMore)
 
-        is PokemonListResult.Degraded -> page(
-            PokemonList(result.pokemon, result.total, result.failure.toFetchFailure()),
+        is ProductListResult.Degraded -> page(
+            ProductList(result.products, result.total, result.failure.notice()),
             result.hasMore,
         )
 
-        is PokemonListResult.Failed -> FetchMore.More(current.copy(notice = result.failure.toFetchFailure()))
+        is ProductListResult.Failed -> FetchMore.More(current.copy(notice = result.failure.notice()))
 
-        PokemonListResult.Stale -> FetchMore.Unchanged
-    }
-
-    override fun onCleared() {
-        listing.close()
+        ProductListResult.Stale -> FetchMore.Unchanged
     }
 
     private fun page(
-        list: PokemonList,
+        list: ProductList,
         hasMore: Boolean,
-    ): FetchMore<PokemonList> = if (hasMore) FetchMore.More(list) else FetchMore.Last(list)
+    ): FetchMore<ProductList> = if (hasMore) FetchMore.More(list) else FetchMore.Last(list)
+
+    private fun ApiFailure.notice(): FetchFailure {
+        val failure = toFetchFailure()
+
+        if (failure.endsSession) throw failure
+
+        return failure
+    }
 }

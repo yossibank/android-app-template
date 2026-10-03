@@ -18,6 +18,9 @@ class FetchState<T>(
     private val mutableRunning = MutableStateFlow<FetchOperation?>(null)
     internal val running: StateFlow<FetchOperation?> = mutableRunning.asStateFlow()
 
+    private val mutableSessionEnded = MutableStateFlow(false)
+    val sessionEnded: StateFlow<Boolean> = mutableSessionEnded.asStateFlow()
+
     private var job: Job? = null
     private var reachedEnd = false
 
@@ -91,6 +94,7 @@ class FetchState<T>(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: FetchFailure) {
+                if (e.endsSession) mutableSessionEnded.value = true
                 Result.failure(e)
             } catch (_: Exception) {
                 Result.failure(FetchFailure.unexpected(canRetry = true))

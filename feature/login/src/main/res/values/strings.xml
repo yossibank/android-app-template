@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="login_title">ログイン</string>
+    <string name="login_username">ユーザー名</string>
+    <string name="login_password">パスワード</string>
+    <string name="login_submit">ログイン</string>
+    <string name="login_rejected">ユーザー名かパスワードが違います</string>
+</resources>

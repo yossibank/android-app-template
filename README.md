@@ -2,7 +2,7 @@
 
 # android-app-template
 
-Jetpack Compose と Kotlin Multiplatform で作る、ポケモン図鑑アプリのテンプレート
+Jetpack Compose と Kotlin Multiplatform で作る、商品一覧アプリのテンプレート
 
 [![Verify](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml/badge.svg)](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml)
 [![License](https://img.shields.io/github/license/yossibank/android-app-template)](LICENSE)
@@ -12,12 +12,12 @@ Jetpack Compose と Kotlin Multiplatform で作る、ポケモン図鑑アプリ
 ![Coroutines](https://img.shields.io/badge/Coroutines-7F52FF?logo=kotlin&logoColor=white)
 ![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
 
-<img src="docs/images/list-light.png" width="260" alt="ポケモンの一覧（ライトモード）">
-<img src="docs/images/list-dark.png" width="260" alt="ポケモンの一覧（ダークモード）">
+<img src="docs/images/list-light.png" width="260" alt="商品の一覧（ライトモード）">
+<img src="docs/images/list-dark.png" width="260" alt="商品の一覧（ダークモード）">
 
 </div>
 
-PokeAPI のポケモンを、無限スクロールと名前での絞り込みで見られます。
+DummyJSON にログインし、商品を無限スクロールと商品名での絞り込みで見られます。
 
 ## 3 つのリポジトリ
 
@@ -39,17 +39,22 @@ flowchart LR
     SHARED["shared<br/><i>共通コア</i>"]
     SCREEN[":core:screen"]
     HOME[":feature:home"]
+    LOGIN[":feature:login"]
     APP[":app"]
     SHARED --> HOME
     SCREEN --> HOME
+    SHARED --> LOGIN
+    SCREEN --> LOGIN
     HOME --> APP
+    LOGIN --> APP
 ```
 
 | モジュール | 役割 |
 | --- | --- |
 | `:core:screen` | 画面の土台（読み込み状態の管理）と、機能に依らない UI 部品 |
 | `:feature:home` | 一覧の画面 |
-| `:app` | 画面の組み立て |
+| `:feature:login` | ログインの画面 |
+| `:app` | 共通コアの設定と、ログイン状態に応じた画面の切り替え |
 
 ## 動かし方
 

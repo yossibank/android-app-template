@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PokemonGrid(
+fun ProductGrid(
     modifier: Modifier = Modifier,
     state: LazyGridState = rememberLazyGridState(),
     bottomPadding: Dp = 8.dp,

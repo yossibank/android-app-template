@@ -47,3 +47,4 @@ rootProject.name = "android-app-template"
 include(":app")
 include(":core:screen")
 include(":feature:home")
+include(":feature:login")

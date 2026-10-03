@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -34,35 +35,45 @@ import com.yossibank.androidapptemplate.core.screen.ui.BannerStyle
 import com.yossibank.androidapptemplate.core.screen.ui.Message
 import com.yossibank.androidapptemplate.core.screen.ui.Searchable
 import com.yossibank.androidapptemplate.core.screen.ui.skeleton
-import com.yossibank.androidapptemplate.feature.home.component.PokemonCard
-import com.yossibank.androidapptemplate.feature.home.component.PokemonGrid
-import com.yossibank.androidapptemplate.feature.home.component.PokemonListGauge
-import com.yossibank.androidapptemplate.feature.home.component.PokemonSkeletonGrid
+import com.yossibank.androidapptemplate.feature.home.component.ProductCard
+import com.yossibank.androidapptemplate.feature.home.component.ProductGrid
+import com.yossibank.androidapptemplate.feature.home.component.ProductListGauge
+import com.yossibank.androidapptemplate.feature.home.component.ProductSkeletonGrid
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
+    onLogout: () -> Unit,
+    onSessionEnded: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(),
 ) {
-    LiveScreen(viewModel) { phase, actions ->
-        HomeScaffold(phase = phase, actions = actions, modifier = modifier)
+    LiveScreen(viewModel, onSessionEnded = onSessionEnded) { phase, actions ->
+        HomeScaffold(phase = phase, actions = actions, onLogout = onLogout, modifier = modifier)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScaffold(
-    phase: FetchPhase<PokemonList>,
+    phase: FetchPhase<ProductList>,
     actions: ScreenActions,
     modifier: Modifier = Modifier,
+    onLogout: () -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(title = { Text(text = stringResource(R.string.home_title)) })
+            TopAppBar(
+                title = { Text(text = stringResource(R.string.home_title)) },
+                actions = {
+                    TextButton(onClick = onLogout) {
+                        Text(text = stringResource(R.string.home_logout))
+                    }
+                },
+            )
         },
     ) { innerPadding ->
         Searchable(
@@ -74,8 +85,8 @@ fun HomeScaffold(
             Screen(
                 phase = phase,
                 onRetry = actions.reload,
-                isEmpty = { it.pokemon.isEmpty() },
-                loading = { PokemonSkeletonGrid() },
+                isEmpty = { it.products.isEmpty() },
+                loading = { ProductSkeletonGrid() },
                 empty = {
                     Message(
                         text = stringResource(R.string.home_empty_title),
@@ -93,11 +104,11 @@ fun HomeScaffold(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeContent(
-    list: PokemonList,
+    list: ProductList,
     query: String,
     actions: ScreenActions,
 ) {
-    val items = list.pokemon.filtered(query)
+    val items = list.products.filtered(query)
     val isFiltering = query.isNotEmpty()
     val isLoadingMore = actions.isLoadingMore && list.notice == null
     val gridState = rememberLazyGridState()
@@ -130,14 +141,14 @@ private fun HomeContent(
             return@PullToRefreshBox
         }
 
-        PokemonGrid(state = gridState, bottomPadding = 72.dp) {
+        ProductGrid(state = gridState, bottomPadding = 72.dp) {
             items(items, key = { it.id }) { entry ->
-                PokemonCard(pokemon = entry)
+                ProductCard(product = entry)
             }
 
             if (isLoadingMore) {
                 items(2) {
-                    PokemonCard(pokemon = null, modifier = Modifier.skeleton())
+                    ProductCard(product = null, modifier = Modifier.skeleton())
                 }
             }
 
@@ -156,8 +167,8 @@ private fun HomeContent(
             }
         }
 
-        PokemonListGauge(
-            loaded = list.pokemon.size,
+        ProductListGauge(
+            loaded = list.products.size,
             total = list.total,
             matched = if (isFiltering) items.size else null,
             onClick = { scope.launch { gridState.animateScrollToItem(0) } },
