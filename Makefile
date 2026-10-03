@@ -4,7 +4,7 @@ ifdef CI
 GRADLE_FLAGS := --rerun-tasks
 endif
 
-.PHONY: verify verify-debug lint format build release test clean
+.PHONY: verify verify-debug lint format build release test clean token
 
 verify:
 	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest assembleRelease $(GRADLE_FLAGS)
@@ -29,3 +29,6 @@ test:
 
 clean:
 	$(GRADLE) clean
+
+token:
+	@sh scripts/codeartifact-token.sh

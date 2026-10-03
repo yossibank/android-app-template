@@ -50,7 +50,7 @@ jobs:
         run: |
           token="$(aws codeartifact get-authorization-token --domain yossibank --domain-owner 724669215656 --query authorizationToken --output text)"
           echo "::add-mask::$token"
-          echo "CODEARTIFACT_AUTH_TOKEN=$token" >> "$GITHUB_ENV"
+          echo "ORG_GRADLE_PROJECT_codeArtifactPassword=$token" >> "$GITHUB_ENV"
 
       - name: Verify
         run: make verify-debug
@@ -82,7 +82,7 @@ jobs:
         run: |
           token="$(aws codeartifact get-authorization-token --domain yossibank --domain-owner 724669215656 --query authorizationToken --output text)"
           echo "::add-mask::$token"
-          echo "CODEARTIFACT_AUTH_TOKEN=$token" >> "$GITHUB_ENV"
+          echo "ORG_GRADLE_PROJECT_codeArtifactPassword=$token" >> "$GITHUB_ENV"
 
       - name: Release build
         run: make release

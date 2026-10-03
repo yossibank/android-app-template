@@ -23,7 +23,7 @@ dependencyResolutionManagement {
             }
             credentials {
                 username = "aws"
-                password = providers.environmentVariable("CODEARTIFACT_AUTH_TOKEN").orNull
+                password = providers.gradleProperty("codeArtifactPassword").orNull
             }
         }
         google()
