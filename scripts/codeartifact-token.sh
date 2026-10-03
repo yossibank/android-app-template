@@ -4,8 +4,10 @@ umask 077
 
 file="${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties"
 
+codeartifact() { sed -n "s/^codeArtifact\.$1=//p" gradle.properties; }
+
 token=$(aws codeartifact get-authorization-token \
-    --domain yossibank --domain-owner 724669215656 --region ap-northeast-1 \
+    --domain "$(codeartifact domain)" --domain-owner "$(codeartifact owner)" --region "$(codeartifact region)" \
     --query authorizationToken --output text)
 
 mkdir -p "$(dirname "$file")"
