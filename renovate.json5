@@ -4,7 +4,7 @@
   timezone: "Asia/Tokyo",
   schedule: ["before 9am on monday"],
   // 共通コアだけは Maven ではなく GitHub のタグを見る。
-  // GitHub Packages は public でも読み取りに認証を要求するため、
+  // CodeArtifact は読み取りに AWS の認証を要求するため、
   // Renovate から Maven のバージョン一覧を引けない。
   // 公開しているタグ（vX.Y.Z）は認証なしで読めるので、そちらを版の出所にする。
   customManagers: [
@@ -26,7 +26,7 @@
     // 放置すると認証エラーが Dependency Dashboard に出続ける。
     {
       matchManagers: ["gradle"],
-      matchPackageNames: ["com.yossibank:shared"],
+      matchPackageNames: ["com.yossibank:shared-android"],
       enabled: false,
     },
   ],
