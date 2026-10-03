@@ -1,31 +1,27 @@
 GRADLE := ./gradlew
 
-ifdef CI
-GRADLE_FLAGS := --rerun-tasks
-endif
-
 .PHONY: verify verify-debug lint format build release test clean token
 
 verify:
-	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest assembleRelease $(GRADLE_FLAGS)
+	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest assembleRelease
 
 verify-debug:
-	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest $(GRADLE_FLAGS)
+	$(GRADLE) ktlintCheck assembleDebug testDebugUnitTest
 
 lint:
-	$(GRADLE) ktlintCheck $(GRADLE_FLAGS)
+	$(GRADLE) ktlintCheck
 
 format:
 	$(GRADLE) ktlintFormat
 
 build:
-	$(GRADLE) assembleDebug $(GRADLE_FLAGS)
+	$(GRADLE) assembleDebug
 
 release:
-	$(GRADLE) assembleRelease $(GRADLE_FLAGS)
+	$(GRADLE) assembleRelease
 
 test:
-	$(GRADLE) testDebugUnitTest $(GRADLE_FLAGS)
+	$(GRADLE) testDebugUnitTest
 
 clean:
 	$(GRADLE) clean
