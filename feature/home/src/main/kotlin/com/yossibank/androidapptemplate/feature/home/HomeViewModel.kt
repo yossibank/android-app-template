@@ -5,32 +5,32 @@ import com.yossibank.androidapptemplate.core.screen.FetchMore
 import com.yossibank.androidapptemplate.core.screen.ScreenViewModel
 import com.yossibank.androidapptemplate.core.screen.toFetchFailure
 import com.yossibank.shared.core.ApiFailure
-import com.yossibank.shared.product.ProductListResult
+import com.yossibank.shared.product.CatalogResult
 
 class HomeViewModel(
     private val listing: ProductListing = ProductPagerListing(),
 ) : ScreenViewModel<ProductList>() {
     override suspend fun fetch(): ProductList = when (val result = listing.reload()) {
-        is ProductListResult.Loaded -> ProductList(result.products, result.total)
+        is CatalogResult.Loaded -> ProductList(result.entries, result.total, listing.pageSize)
 
-        is ProductListResult.Degraded -> ProductList(result.products, result.total, result.failure.notice())
+        is CatalogResult.Degraded -> ProductList(result.entries, result.total, listing.pageSize, result.failure.notice())
 
-        is ProductListResult.Failed -> throw result.failure.toFetchFailure()
+        is CatalogResult.Failed -> throw result.failure.toFetchFailure()
 
-        ProductListResult.Stale -> ProductList(products = emptyList(), total = 0)
+        CatalogResult.Stale -> ProductList(products = emptyList(), total = 0, pageSize = listing.pageSize)
     }
 
     override suspend fun fetchMore(current: ProductList): FetchMore<ProductList> = when (val result = listing.loadNext()) {
-        is ProductListResult.Loaded -> page(ProductList(result.products, result.total), result.hasMore)
+        is CatalogResult.Loaded -> page(ProductList(result.entries, result.total, listing.pageSize), result.hasMore)
 
-        is ProductListResult.Degraded -> page(
-            ProductList(result.products, result.total, result.failure.notice()),
+        is CatalogResult.Degraded -> page(
+            ProductList(result.entries, result.total, listing.pageSize, result.failure.notice()),
             result.hasMore,
         )
 
-        is ProductListResult.Failed -> FetchMore.More(current.copy(notice = result.failure.notice()))
+        is CatalogResult.Failed -> FetchMore.More(current.copy(notice = result.failure.notice()))
 
-        ProductListResult.Stale -> FetchMore.Unchanged
+        CatalogResult.Stale -> FetchMore.Unchanged
     }
 
     private fun page(

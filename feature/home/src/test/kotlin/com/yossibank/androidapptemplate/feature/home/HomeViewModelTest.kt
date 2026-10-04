@@ -4,8 +4,8 @@ import com.yossibank.androidapptemplate.core.screen.FetchFailure
 import com.yossibank.androidapptemplate.core.screen.FetchMore
 import com.yossibank.androidapptemplate.core.screen.FetchPhase
 import com.yossibank.shared.core.ApiFailure
-import com.yossibank.shared.product.ProductEntry
-import com.yossibank.shared.product.ProductListResult
+import com.yossibank.shared.product.CatalogEntry
+import com.yossibank.shared.product.CatalogResult
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,33 +24,35 @@ import org.junit.Before
 import org.junit.Test
 
 private class StubListing(
-    private vararg val pages: ProductListResult,
+    private vararg val pages: CatalogResult,
 ) : ProductListing {
+    override val pageSize = 20
+
     private var index = 0
 
-    override suspend fun reload(): ProductListResult {
+    override suspend fun reload(): CatalogResult {
         index = 0
         return next()
     }
 
-    override suspend fun loadNext(): ProductListResult = next()
+    override suspend fun loadNext(): CatalogResult = next()
 
-    private fun next(): ProductListResult = pages[minOf(index++, pages.size - 1)]
+    private fun next(): CatalogResult = pages[minOf(index++, pages.size - 1)]
 }
 
 private fun entries(titles: Array<out String>) = titles.mapIndexed { index, title ->
-    ProductEntry(id = index + 1, title = title, thumbnailUrl = "https://img.example/${index + 1}.webp")
+    CatalogEntry(id = index + 1, title = title, thumbnailUrl = "https://img.example/${index + 1}.webp", brand = null, price = 1.0)
 }
 
 private fun loaded(
     vararg titles: String,
     hasMore: Boolean = false,
-) = ProductListResult.Loaded(products = entries(titles), hasMore = hasMore, total = 194)
+) = CatalogResult.Loaded(entries = entries(titles), hasMore = hasMore, total = 194)
 
 private fun degraded(
     failure: ApiFailure,
     vararg titles: String,
-) = ProductListResult.Degraded(products = entries(titles), hasMore = true, total = 194, failure = failure)
+) = CatalogResult.Degraded(entries = entries(titles), hasMore = true, total = 194, failure = failure)
 
 private val FetchMore<ProductList>.list: ProductList?
     get() = when (this) {
@@ -73,7 +75,7 @@ class HomeViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun model(vararg pages: ProductListResult) = HomeViewModel(StubListing(*pages))
+    private fun model(vararg pages: CatalogResult) = HomeViewModel(StubListing(*pages))
 
     @Test
     fun `取得に成功したら一覧になる`() = runTest(dispatcher) {
@@ -112,7 +114,7 @@ class HomeViewModelTest {
 
     @Test
     fun `最初の取得の失敗はそのまま失敗として投げる`() = runTest(dispatcher) {
-        val model = model(ProductListResult.Failed(ApiFailure.Timeout))
+        val model = model(CatalogResult.Failed(ApiFailure.Timeout))
 
         try {
             model.fetch()
@@ -124,7 +126,7 @@ class HomeViewModelTest {
 
     @Test
     fun `続きの取得がすべて失敗したら、読み込めている分はそのままに知らせを載せる`() = runTest(dispatcher) {
-        val model = model(loaded("a", hasMore = true), ProductListResult.Failed(ApiFailure.Offline))
+        val model = model(loaded("a", hasMore = true), CatalogResult.Failed(ApiFailure.Offline))
 
         val more = model.fetchMore(model.fetch())
 
@@ -135,7 +137,7 @@ class HomeViewModelTest {
 
     @Test
     fun `捨てられた結果は続きとして積まない`() = runTest(dispatcher) {
-        val model = model(loaded("a", hasMore = true), ProductListResult.Stale)
+        val model = model(loaded("a", hasMore = true), CatalogResult.Stale)
 
         assertEquals("捨てられた結果が続きとして積まれている", FetchMore.Unchanged, model.fetchMore(model.fetch()))
     }
@@ -146,9 +148,11 @@ class HomeViewModelTest {
         val reloads = ArrayDeque(listOf(loaded("a", hasMore = true), loaded("x")))
         val model = HomeViewModel(
             object : ProductListing {
-                override suspend fun reload(): ProductListResult = reloads.removeFirst()
+                override val pageSize = 20
 
-                override suspend fun loadNext(): ProductListResult {
+                override suspend fun reload(): CatalogResult = reloads.removeFirst()
+
+                override suspend fun loadNext(): CatalogResult {
                     gate.await()
                     return degraded(ApiFailure.Offline, "a", "b")
                 }
@@ -172,7 +176,7 @@ class HomeViewModelTest {
 
     @Test
     fun `最初の取得が認証切れなら、セッションの終わりとして投げる`() = runTest(dispatcher) {
-        val model = model(ProductListResult.Failed(ApiFailure.Unauthorized))
+        val model = model(CatalogResult.Failed(ApiFailure.Unauthorized))
 
         try {
             model.fetch()

@@ -1,6 +1,6 @@
 package com.yossibank.androidapptemplate.feature.home
 
-import com.yossibank.shared.product.ProductEntry
+import com.yossibank.shared.product.CatalogEntry
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -36,5 +36,5 @@ class ProductFilterTest {
     private fun entry(
         id: Int,
         title: String,
-    ) = ProductEntry(id = id, title = title, thumbnailUrl = "")
+    ) = CatalogEntry(id = id, title = title, thumbnailUrl = "", brand = null, price = 1.0)
 }

@@ -1,18 +1,23 @@
 package com.yossibank.androidapptemplate.feature.home
 
-import com.yossibank.shared.product.ProductListResult
-import com.yossibank.shared.product.ProductPager
+import com.yossibank.shared.product.CatalogPager
+import com.yossibank.shared.product.CatalogResult
 
 interface ProductListing {
-    suspend fun reload(): ProductListResult
+    val pageSize: Int
 
-    suspend fun loadNext(): ProductListResult
+    suspend fun reload(): CatalogResult
+
+    suspend fun loadNext(): CatalogResult
 }
 
 class ProductPagerListing(
-    private val pager: ProductPager = ProductPager(),
+    private val pager: CatalogPager = CatalogPager(),
 ) : ProductListing {
-    override suspend fun reload(): ProductListResult = pager.reload()
+    override val pageSize: Int
+        get() = pager.pageSize
 
-    override suspend fun loadNext(): ProductListResult = pager.loadNext()
+    override suspend fun reload(): CatalogResult = pager.reload()
+
+    override suspend fun loadNext(): CatalogResult = pager.loadNext()
 }

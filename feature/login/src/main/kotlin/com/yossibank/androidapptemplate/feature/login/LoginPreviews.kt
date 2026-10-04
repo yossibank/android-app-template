@@ -1,5 +1,6 @@
 package com.yossibank.androidapptemplate.feature.login
 
+import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.yossibank.androidapptemplate.core.screen.FetchFailure
@@ -8,6 +9,12 @@ import com.yossibank.androidapptemplate.core.screen.ui.AppTheme
 @Preview(name = "入力", showBackground = true)
 @Composable
 fun LoginPreview() {
+    PreviewLogin(LoginState())
+}
+
+@Preview(name = "入力（ダーク）", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun LoginDarkPreview() {
     PreviewLogin(LoginState())
 }
 
