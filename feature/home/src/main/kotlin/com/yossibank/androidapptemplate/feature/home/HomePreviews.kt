@@ -1,23 +1,25 @@
 package com.yossibank.androidapptemplate.feature.home
 
+import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.yossibank.androidapptemplate.core.screen.FetchFailure
 import com.yossibank.androidapptemplate.core.screen.FetchPhase
 import com.yossibank.androidapptemplate.core.screen.ScreenActions
 import com.yossibank.androidapptemplate.core.screen.ui.AppTheme
-import com.yossibank.shared.product.ProductEntry
+import com.yossibank.shared.product.CatalogEntry
 
 private val SAMPLE = ProductList(
     products = listOf(
-        "Essence Mascara Lash Princess",
-        "Eyeshadow Palette with Mirror",
-        "Powder Canister",
-        "Red Lipstick",
-        "Red Nail Polish",
-        "Calvin Klein CK One",
-    ).mapIndexed { index, title -> ProductEntry(id = index + 1, title = title, thumbnailUrl = "") },
+        CatalogEntry(id = 1, title = "Essence Mascara Lash Princess", thumbnailUrl = "", brand = "Essence", price = 9.99),
+        CatalogEntry(id = 2, title = "Eyeshadow Palette with Mirror", thumbnailUrl = "", brand = "Glamour Beauty", price = 19.99),
+        CatalogEntry(id = 16, title = "Apple", thumbnailUrl = "", brand = null, price = 1.99),
+        CatalogEntry(id = 4, title = "Red Lipstick", thumbnailUrl = "", brand = "Chic Cosmetics", price = 12.99),
+        CatalogEntry(id = 5, title = "Red Nail Polish", thumbnailUrl = "", brand = "Nail Couture", price = 8.99),
+        CatalogEntry(id = 6, title = "Calvin Klein CK One", thumbnailUrl = "", brand = "Calvin Klein", price = 49.99),
+    ),
     total = 194,
+    pageSize = 20,
 )
 
 @Preview(name = "一覧", showBackground = true, heightDp = 900)
@@ -44,10 +46,16 @@ fun HomeNoticePreview() {
     PreviewHome(phase = FetchPhase.Loaded(SAMPLE.copy(notice = FetchFailure.offline)))
 }
 
+@Preview(name = "ダーク", showBackground = true, heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun HomeDarkPreview() {
+    PreviewHome(phase = FetchPhase.Loaded(SAMPLE))
+}
+
 @Preview(name = "空", showBackground = true)
 @Composable
 fun HomeEmptyPreview() {
-    PreviewHome(phase = FetchPhase.Loaded(ProductList(products = emptyList(), total = 0)))
+    PreviewHome(phase = FetchPhase.Loaded(ProductList(products = emptyList(), total = 0, pageSize = 20)))
 }
 
 @Preview(name = "失敗（再試行できる）", showBackground = true)

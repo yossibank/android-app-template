@@ -11,4 +11,11 @@
     <string name="home_progress_total">/ %1$,d</string>
     <string name="home_progress_filtered_count">%1$,d 件</string>
     <string name="home_progress_filtered_detail">（全 %1$,d 件中 %2$,d 件読み込み済み）</string>
+    <string name="home_collection">The Collection</string>
+    <string name="home_account">アカウント</string>
+    <string name="home_chapter_range">%1$d — %2$d</string>
+    <string name="home_chapter_loading">· 読み込み中</string>
+    <string name="home_product_number">NO. %1$s</string>
+    <string name="home_load_more_failed">続きを読み込めませんでした。%1$s</string>
+    <string name="home_clear_search">入力を消す</string>
 </resources>

@@ -5,4 +5,7 @@
     <string name="login_password">パスワード</string>
     <string name="login_submit">ログイン</string>
     <string name="login_rejected">ユーザー名かパスワードが違います</string>
+    <string name="login_collection">The Collection</string>
+    <string name="login_show_password">パスワードを表示</string>
+    <string name="login_hide_password">パスワードを隠す</string>
 </resources>
