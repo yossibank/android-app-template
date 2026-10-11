@@ -1,6 +1,8 @@
 # android-app-template
 
-## 🛠️ 作業の進め方
+Jetpack Compose と Kotlin Multiplatform で作る、商品一覧アプリのテンプレート。
+
+## 作業の進め方
 
 - 変更したら `make verify` を通す。
 - androidTest は無効化している。書くなら `app/build.gradle.kts` の `enableAndroidTest` を戻す。
@@ -10,12 +12,7 @@
 > [!WARNING]
 > `verify` から `assembleRelease` を**外さない**（R8 の縮小の壊れに気づけなくなる）。
 
-## ✍️ コードの書き方
-
-> [!IMPORTANT]
-> **コメントを書かない。** コード、設定、スクリプト、CI のいずれにも書かない。要ると判断したら、書かずに提案する。Renovate が Actions の SHA の横に付けるバージョンのコメントは除く。
-
-## 🔗 3 リポジトリの取り決め
+## 3 リポジトリの取り決め
 
 - 共通ロジックは kmp-app-template に置く。ここには Android 固有のものだけを置く。
 - 同じ画面が ios-app-template にもある。挙動を変えるときは向こうに合わせる。
