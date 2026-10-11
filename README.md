@@ -2,13 +2,25 @@
 
 Jetpack Compose と Kotlin Multiplatform で作る、商品一覧アプリのテンプレート
 
-[![Verify](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml/badge.svg)](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml)
+[![Verify](https://img.shields.io/github/actions/workflow/status/yossibank/android-app-template/verify.yml?label=Verify&logo=github)](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml)
 [![License](https://img.shields.io/github/license/yossibank/android-app-template)](LICENSE)
 
-Kotlin ・ Jetpack Compose ・ Coroutines ・ Kotlin Multiplatform
+![Android 7+](https://img.shields.io/badge/Android-7%2B-3DDC84?logo=android&logoColor=white)
+![Kotlin 2.4](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-4285F4?logo=jetpackcompose&logoColor=white)
+![Coroutines](https://img.shields.io/badge/Coroutines-7F52FF?logo=kotlin&logoColor=white)
+![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
 
-<img src="docs/images/list-light.png" width="260" alt="商品の一覧（ライトモード）">
-<img src="docs/images/list-dark.png" width="260" alt="商品の一覧（ダークモード）">
+<table>
+  <tr>
+    <th>ライト</th>
+    <th>ダーク</th>
+  </tr>
+  <tr>
+    <td><img src="docs/images/list-light.png" width="260" alt="商品の一覧（ライトモード）"></td>
+    <td><img src="docs/images/list-dark.png" width="260" alt="商品の一覧（ダークモード）"></td>
+  </tr>
+</table>
 
 DummyJSON にログイン ・ 無限スクロール ・ 商品名で絞り込み
 
@@ -51,6 +63,8 @@ flowchart LR
 | `:app` | 共通コアの設定と、ログイン状態に応じた画面の切り替え |
 
 ## 動かし方
+
+最初に、次の順にコマンドを実行する。
 
 | 順 | コマンド | 内容 |
 | --- | --- | --- |
