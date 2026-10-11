@@ -7,6 +7,7 @@ Jetpack Compose と Kotlin Multiplatform で作る、商品一覧アプリのテ
 作業では、次の手順と置き場所の決まりを守る。
 
 - 変更したら `make verify` を通す。
+  - 共通コアの取得が 401 で止まったら、トークンが切れている。[README](README.md#動かし方) の手順で `make token` し直す。
 - androidTest は無効化している。書くなら `app/build.gradle.kts` の `enableAndroidTest` を戻す。
 - バージョンを `gradle/libs.versions.toml` 以外で指定しない。
 - `.gitignore` に `*.jar` を追加しない（`gradle-wrapper.jar` が消える）。

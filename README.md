@@ -73,7 +73,7 @@ flowchart LR
 | 3 | `make verify` | 変更したら通す |
 
 > [!IMPORTANT]
-> 共通コアは AWS CodeArtifact から取得する。`make token` の前に AWS にログインしておく。
+> 共通コアは AWS CodeArtifact から取得する。`make token` の前に、CodeArtifact を読めるプロファイルで AWS にログインする（SSO なら `aws sso login --profile <名前>`）。プロファイルは `AWS_PROFILE=<名前> make token` で渡す。
 
 ### 共通コアを手元のものに差し替える
 
