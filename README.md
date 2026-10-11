@@ -15,11 +15,11 @@ Jetpack Compose と Kotlin Multiplatform で作る、商品一覧アプリのテ
 <img src="docs/images/list-light.png" width="260" alt="商品の一覧（ライトモード）">
 <img src="docs/images/list-dark.png" width="260" alt="商品の一覧（ダークモード）">
 
-🔐 DummyJSON にログイン ・ 📜 無限スクロール ・ 🔍 商品名で絞り込み
+DummyJSON にログイン ・ 無限スクロール ・ 商品名で絞り込み
 
 </div>
 
-## 🔗 3 つのリポジトリ
+## 3 つのリポジトリ
 
 ```mermaid
 flowchart LR
@@ -33,11 +33,11 @@ flowchart LR
 
 [🧩 kmp-app-template](https://github.com/yossibank/kmp-app-template) ・ [🍎 ios-app-template](https://github.com/yossibank/ios-app-template)
 
-## 🧱 モジュール構成
+## モジュール構成
 
 ```mermaid
 flowchart LR
-    SHARED["🧩 shared<br/><i>共通コア</i>"]
+    SHARED["🧩 shared<br/>共通コア"]
     SCREEN[":core:screen"]
     HOME[":feature:home"]
     LOGIN[":feature:login"]
@@ -57,37 +57,32 @@ flowchart LR
 | `:feature:login` | ログインの画面 |
 | `:app` | 共通コアの設定と、ログイン状態に応じた画面の切り替え |
 
-## 🚀 動かし方
+## 動かし方
 
-| | コマンド | 内容 |
+| 順 | コマンド | 内容 |
 | --- | --- | --- |
-| 1️⃣ | `make token` | 共通コアを取得するトークンを `~/.gradle/gradle.properties` に書き込む（12 時間有効、Android Studio も使う） |
-| 2️⃣ | `make build` | ビルドする（Android Studio で開いてもよい） |
-| 3️⃣ | `make verify` | 変更したら通す |
+| 1 | `make token` | 共通コアを取得するトークンを `~/.gradle/gradle.properties` に書き込む（12 時間有効、Android Studio も使う） |
+| 2 | `make build` | ビルドする（Android Studio で開いてもよい） |
+| 3 | `make verify` | 変更したら通す |
 
 > [!IMPORTANT]
-> 共通コアは AWS CodeArtifact から取得します。`make token` の前に AWS にログインしておきます。
+> 共通コアは AWS CodeArtifact から取得する。`make token` の前に AWS にログインしておく。
 
-<details>
-<summary>🔄 共通コアを手元のものに差し替える</summary>
+### 共通コアを手元のものに差し替える
 
-kmp-app-template のディレクトリを絶対パスで渡します。このときはトークンは要りません。
+kmp-app-template のディレクトリを絶対パスで渡す。このときはトークンは要らない。
 
 ```sh
 SHARED_DIR=/path/to/kmp-app-template make verify
 ```
 
-Android Studio では `~/.gradle/gradle.properties` に `shared.dir=/path/to/kmp-app-template` を書きます。
+Android Studio では `~/.gradle/gradle.properties` に `shared.dir=/path/to/kmp-app-template` を書く。
 
-</details>
+### テンプレートから作ったとき
 
-<details>
-<summary>🧰 テンプレートから作ったとき</summary>
-
-パッケージの接頭辞と GitHub のオーナーを置き換えます。3 つのリポジトリそれぞれで実行します。
+パッケージの接頭辞と GitHub のオーナーを置き換える。3 つのリポジトリそれぞれで実行する。
 
 ```sh
 scripts/rename.sh <GitHub のオーナー> <パッケージの接頭辞>    # 例: scripts/rename.sh acme com.acme
 ```
 
-</details>
