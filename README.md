@@ -5,10 +5,7 @@ Jetpack Compose と Kotlin Multiplatform で作る、商品一覧アプリのテ
 [![Verify](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml/badge.svg)](https://github.com/yossibank/android-app-template/actions/workflows/verify.yml)
 [![License](https://img.shields.io/github/license/yossibank/android-app-template)](LICENSE)
 
-![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white)
-![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-4285F4?logo=jetpackcompose&logoColor=white)
-![Coroutines](https://img.shields.io/badge/Coroutines-7F52FF?logo=kotlin&logoColor=white)
-![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin_Multiplatform-7F52FF?logo=kotlin&logoColor=white)
+使う技術は、Kotlin、Jetpack Compose、Coroutines、Kotlin Multiplatform である。
 
 <img src="docs/images/list-light.png" width="260" alt="商品の一覧（ライトモード）">
 <img src="docs/images/list-dark.png" width="260" alt="商品の一覧（ダークモード）">
