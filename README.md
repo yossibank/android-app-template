@@ -24,7 +24,9 @@ Jetpack Compose と Kotlin Multiplatform で作る、商品一覧アプリのテ
 
 DummyJSON にログイン ・ 無限スクロール ・ 商品名で絞り込み
 
-## 3 つのリポジトリ
+## 🗺️ 全体像
+
+共通コアと 2 つのアプリを、3 つのリポジトリに分けている。
 
 ```mermaid
 flowchart LR
@@ -38,7 +40,9 @@ flowchart LR
 
 [🧩 kmp-app-template](https://github.com/yossibank/kmp-app-template) ・ [🍎 ios-app-template](https://github.com/yossibank/ios-app-template)
 
-## モジュール構成
+### モジュール構成
+
+アプリは、次のモジュールに分けている。
 
 ```mermaid
 flowchart LR
@@ -62,18 +66,20 @@ flowchart LR
 | `:feature:login` | ログインの画面 |
 | `:app` | 共通コアの設定と、ログイン状態に応じた画面の切り替え |
 
-## 動かし方
+## 🚀 動かし方
 
 最初に、次の順にコマンドを実行する。
 
 | 順 | コマンド | 内容 |
 | --- | --- | --- |
-| 1 | `make token` | 共通コアを取得するトークンを `~/.gradle/gradle.properties` に書き込む（12 時間有効、Android Studio も使う） |
-| 2 | `make build` | ビルドする（Android Studio で開いてもよい） |
+| 1 | `make token` | 共通コアを取得するトークンを `~/.gradle/gradle.properties` に書き込む。12 時間有効で、Android Studio も使う |
+| 2 | `make build` | ビルドする。Android Studio で開いてもよい |
 | 3 | `make verify` | 変更したら通す |
 
 > [!IMPORTANT]
-> 共通コアは AWS CodeArtifact から取得する。`make token` の前に、CodeArtifact を読めるプロファイルで AWS にログインする（SSO なら `aws sso login --profile <名前>`）。プロファイルは `AWS_PROFILE=<名前> make token` で渡す。
+> 共通コアは AWS CodeArtifact から取得する。`make token` の前に、それを読めるプロファイルで AWS にログインする。
+>
+> SSO なら `aws sso login --profile <名前>` を使う。プロファイルは `AWS_PROFILE=<名前> make token` で渡す。
 
 ### 共通コアを手元のものに差し替える
 
@@ -83,7 +89,11 @@ kmp-app-template のディレクトリを絶対パスで渡す。このときは
 SHARED_DIR=/path/to/kmp-app-template make verify
 ```
 
-Android Studio では `~/.gradle/gradle.properties` に `shared.dir=/path/to/kmp-app-template` を書く。
+Android Studio では、`~/.gradle/gradle.properties` にパスを書く。
+
+```properties
+shared.dir=/path/to/kmp-app-template
+```
 
 ### テンプレートから作ったとき
 
