@@ -60,7 +60,7 @@ flowchart LR
 | --- | --- |
 | 対応 OS | Android 7+（minSdk 24） |
 | 言語 | Kotlin 2.4 |
-| ビルド | Gradle 9.8.2、Android Gradle Plugin 9.4.1 |
+| ビルド | Gradle 9.8.2、Android Gradle Plugin 9.5.1 |
 | 共通コア | Kotlin Multiplatform（AWS CodeArtifact から取得） |
 | lint | ktlint |
 
