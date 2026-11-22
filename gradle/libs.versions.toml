@@ -11,7 +11,7 @@ androidx-activity = "1.13.0"
 androidx-compose-bom = "2026.09.00"
 androidx-core = "1.19.1"
 coil = "3.6.3"
-androidx-lifecycle = "2.11.0"
+androidx-lifecycle = "2.11.1"
 
 junit = "4.13.2"
 kotlinx-coroutines = "1.11.0"
